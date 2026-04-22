@@ -4,7 +4,7 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Search, Menu, ZoomIn, ZoomOut, Maximize, Upload } from "lucide-react";
 
 // --- CONFIGURATION ---
-const RING_RADIUS = 220; // Perfect distance for proportional spacing
+const RING_RADIUS = 280; // Increased to provide more breathing room
 
 // --- DEFAULT DATA (Based on your CSV Snippet) ---
 const DEFAULT_CSV = `"Primary Contact","Category","Company / Brand","Client Name","Client Title"
@@ -306,10 +306,15 @@ export default function MapComponent() {
     const calculatedNodes: LayoutNode[] = [];
     let maximumDepth = 0;
 
-    // Pass 3: Calculate Layout using the proportional weights
-    const calcNodeLayout = (id: string, startAngle: number, endAngle: number, depth: number) => {
+    // Pass 3: Calculate Layout using the proportional weights with staggering to prevent overlap
+    const calcNodeLayout = (id: string, startAngle: number, endAngle: number, depth: number, indexInParent: number = 0) => {
       maximumDepth = Math.max(maximumDepth, depth);
-      const radius = depth * RING_RADIUS;
+      
+      // STAGGER RADIUS: To prevent label overlap in dense clusters, we alternate the radius
+      // for sibling nodes. This creates vertical separation between horizontal labels.
+      const staggerOffset = (depth > 0 && indexInParent % 2 === 0) ? 40 : 0;
+      const radius = depth === 0 ? 0 : (depth * RING_RADIUS) + staggerOffset;
+      
       const angle = depth === 0 ? 0 : startAngle + (endAngle - startAngle) / 2;
       const nodeObj = nodesMap.get(id)!;
 
@@ -320,7 +325,7 @@ export default function MapComponent() {
         const totalWeight = children.reduce((sum, cid) => sum + getWeight(cid), 0);
         let currentStartAngle = startAngle;
         
-        children.forEach((childId) => {
+        children.forEach((childId, idx) => {
           const childWeight = getWeight(childId);
           const ratio = childWeight / totalWeight; // Dynamic sizing!
           const arcSpread = (endAngle - startAngle) * ratio;
@@ -330,7 +335,7 @@ export default function MapComponent() {
           const childStart = currentStartAngle + padding;
           const childEnd = currentStartAngle + arcSpread - padding;
           
-          calcNodeLayout(childId, childStart, childEnd, depth + 1);
+          calcNodeLayout(childId, childStart, childEnd, depth + 1, idx);
           currentStartAngle += arcSpread; // Advance the pointer
         });
       }
