@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Search, Menu, ZoomIn, ZoomOut, Maximize, Upload } from "lucide-react";
+import { Network, Search, ZoomIn, ZoomOut, Maximize, Upload } from "lucide-react";
+import ExplorerShell from "@/components/ExplorerShell";
 
 // --- CONFIGURATION ---
 const RING_RADIUS = 280; // Increased to provide more breathing room
@@ -34,7 +35,6 @@ const DEFAULT_CSV = `"Primary Contact","Category","Company / Brand","Client Name
 "Lee Leggett","Media","NewsCorp","Michael Miller","Chairman"
 "Lee Leggett","Media","NewsCorp","Bettina Brown","Director, Consumer Marketing"
 "Lee Leggett","Media","NewsCorp","Diana Kay","GM, Events & Experiences"
-"Lee Leggett","Media","NewsCorp","Penny Fowler","Chairman Herald & Weekly Times"
 "Lee Leggett","Media","Netflix","Rebecca Nadilo","Director, Marketing Partnerships"
 "Lee Leggett","Industry","Marketing Academy","Sherilyn Shackell","Founder & CEO"
 "Lee Leggett","Industry","System 1","Jon Evans","Chief Customer Officer"
@@ -52,7 +52,7 @@ const parseCSV = (str: string) => {
   const result: string[][] = [];
   let row: string[] = [], col = "", inQuotes = false;
   for (let i = 0; i < str.length; i++) {
-    let char = str[i];
+    const char = str[i];
     if (inQuotes) {
       if (char === '"') {
         if (str[i + 1] === '"') { col += '"'; i++; } 
@@ -86,6 +86,12 @@ interface LayoutNode extends MapNode {
   depth: number;
 }
 
+type LayoutLink = {
+  id: string;
+  source: Pick<LayoutNode, "x" | "y" | "category" | "id">;
+  target: Pick<LayoutNode, "x" | "y" | "category" | "id">;
+};
+
 export default function MapComponent() {
   const [csvString, setCsvString] = useState(DEFAULT_CSV);
   const [viewMode, setViewMode] = useState<'industry' | 'exec'>('industry'); // 'industry' or 'exec'
@@ -95,6 +101,7 @@ export default function MapComponent() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
+  const [viewportSize, setViewportSize] = useState({ width: 800, height: 800 });
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -185,10 +192,29 @@ export default function MapComponent() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setExpandedIds(getInitialExpanded(viewMode, nodesMap));
     setPath([nodesMap.get('omnicom')!]);
     setTransform({ x: 0, y: 0, k: 0.8 });
   }, [nodesMap, viewMode]);
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const updateSize = () => {
+      setViewportSize({
+        width: svg.clientWidth || 800,
+        height: svg.clientHeight || 800,
+      });
+    };
+    updateSize();
+
+    const resizeObserver = new ResizeObserver(updateSize);
+    resizeObserver.observe(svg);
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const currentRoot = path[path.length - 1] || nodesMap.get('omnicom');
 
@@ -343,7 +369,7 @@ export default function MapComponent() {
 
     calcNodeLayout(focusId, 0, Math.PI * 2, 0);
 
-    const calculatedLinks: any[] = [];
+    const calculatedLinks: LayoutLink[] = [];
     // Iterate over ALL activeLinks in the graph to draw cross-connections
     activeLinks.forEach(link => {
       const sourceNode = calculatedNodes.find(n => n.id === link.source);
@@ -427,249 +453,261 @@ export default function MapComponent() {
 
   if (!currentRoot) return null;
 
-  return (
-    <div className="w-full h-screen bg-slate-950 text-slate-300 font-sans overflow-hidden flex flex-col selection:bg-blue-500/30">
-      
-      {/* HEADER NAV */}
-      <div className="h-14 border-b border-white/5 flex items-center justify-between px-6 z-50 relative bg-slate-950/80 backdrop-blur-md">
-        <div className="flex items-center gap-4 w-64">
-          <Menu className="w-5 h-5 text-slate-400 cursor-pointer hover:text-white" />
-          <h1 className="font-bold tracking-widest text-sm text-white">OMNICOM <span className="text-slate-500 font-normal">OCEANIA</span></h1>
-        </div>
-        
-        {/* VIEW TOGGLE & FILE UPLOAD */}
-        <div className="hidden md:flex items-center gap-3">
-          <div className="bg-slate-900 border border-white/10 rounded-lg p-1">
-            <button 
-              onClick={() => handleViewChange('industry')}
-              className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${viewMode === 'industry' ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
-            >
-              Industry POV
-            </button>
-            <button 
-              onClick={() => handleViewChange('exec')}
-              className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${viewMode === 'exec' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
-            >
-              Executive POV
-            </button>
-          </div>
-          
-          <label className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-white cursor-pointer transition-all">
-            <Upload className="w-3.5 h-3.5" />
-            Upload CSV
-            <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} />
-          </label>
-        </div>
-
-        {/* SEARCH BAR */}
-        <div className="flex-1 max-w-sm relative hidden lg:block ml-8" ref={searchContainerRef}>
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input 
-            type="text" 
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setShowSearchDropdown(true);
-            }}
-            onFocus={() => setShowSearchDropdown(true)}
-            placeholder="Search companies, contacts, industries..." 
-            className="w-full bg-white/5 border border-white/10 rounded px-10 py-1.5 text-sm focus:outline-none focus:border-blue-500/50 focus:bg-white/10 transition-all text-white placeholder-slate-500"
-          />
-          
-          {/* SEARCH DROPDOWN */}
-          {showSearchDropdown && searchQuery.length >= 3 && (
-            <div className="absolute top-full mt-2 left-0 w-full bg-slate-900 border border-white/10 rounded-md shadow-2xl z-50 overflow-hidden">
-              {searchResults.length > 0 ? (
-                <ul className="max-h-80 overflow-y-auto">
-                  {searchResults.map(node => (
-                    <li 
-                      key={`search-${node.id}`}
-                      onClick={() => {
-                        handleNodeClick(node);
-                        setShowSearchDropdown(false);
-                        setSearchQuery('');
-                      }}
-                      className="px-4 py-3 hover:bg-slate-800 cursor-pointer border-b border-white/5 last:border-0 transition-colors flex flex-col gap-1"
-                    >
-                      <div className="text-sm font-medium text-white">{node.label}</div>
-                      <div className="text-[10px] text-slate-400 flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full inline-block shadow-sm" style={{ backgroundColor: getColor(node.category) }}></span>
-                        <span className="uppercase tracking-wider font-semibold">{node.category}</span>
-                        {node.subLabel && <span className="text-slate-500">• {node.subLabel}</span>}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="px-4 py-4 text-sm text-slate-400 text-center">
-                  No matches found for "<span className="text-white">{searchQuery}</span>"
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* BREADCRUMB */}
-      <div className="flex items-center gap-2 px-6 py-2 bg-slate-900 border-b border-white/5 text-xs z-40 relative w-full shadow-md">
-        <span className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Focus:</span>
-        {path.map((p, i) => (
-          <React.Fragment key={p.id}>
-            <button onClick={() => { setPath(prev => prev.slice(0, i + 1)); setTransform({ x: 0, y: 0, k: 1 }); }} className="text-slate-300 hover:text-white font-medium transition-colors">
-              {p.label}
-            </button>
-            {i < path.length - 1 && <span className="text-slate-600">/</span>}
-          </React.Fragment>
-        ))}
-      </div>
-
-      <div className="flex-1 relative flex">
-        {/* LEFT SIDEBAR STATS */}
-        <div className="w-64 border-r border-white/5 p-6 z-10 bg-slate-950/50 backdrop-blur-sm hidden lg:block">
-          <h2 className="text-xs uppercase tracking-widest text-slate-500 mb-6 font-semibold">Network Overview</h2>
-          <ul className="space-y-4">
-            <li className="flex items-center justify-between group">
-              <div className="flex items-center gap-3 text-sm text-slate-300"><span className="w-2 h-2 rounded-full bg-amber-500"></span>Executives</div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs font-mono text-white">{focusStats.executive}</span>
-                <span className="text-[9px] font-mono text-slate-500">{visibleExecs} Rendered</span>
-              </div>
-            </li>
-            <li className="flex items-center justify-between group">
-              <div className="flex items-center gap-3 text-sm text-slate-300"><span className="w-2 h-2 rounded-full bg-blue-500"></span>Industries</div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs font-mono text-white">{focusStats.industry}</span>
-                <span className="text-[9px] font-mono text-slate-500">{visibleInds} Rendered</span>
-              </div>
-            </li>
-            <li className="flex items-center justify-between group">
-              <div className="flex items-center gap-3 text-sm text-slate-300"><span className="w-2 h-2 rounded-full bg-purple-500"></span>Companies</div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs font-mono text-white">{focusStats.company}</span>
-                <span className="text-[9px] font-mono text-slate-500">{visibleComps} Rendered</span>
-              </div>
-            </li>
-            <li className="flex items-center justify-between group">
-              <div className="flex items-center gap-3 text-sm text-slate-300"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>Contacts</div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs font-mono text-white">{focusStats.person}</span>
-                <span className="text-[9px] font-mono text-slate-500">{visiblePersons} Rendered</span>
-              </div>
-            </li>
-          </ul>
-        </div>
-
-        {/* MAIN CANVAS */}
-        <div 
-          className="flex-1 overflow-hidden cursor-grab active:cursor-grabbing relative"
-          onWheel={handleWheel} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
+  const controls = (
+    <>
+      <div className="hidden items-center gap-1 rounded-xl border border-white/10 bg-slate-900/80 p-1 md:flex">
+        <button
+          onClick={() => handleViewChange('industry')}
+          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+            viewMode === 'industry'
+              ? 'bg-blue-600 text-white'
+              : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
+          }`}
         >
-          {/* Zoom Controls */}
-          <div className="absolute bottom-6 right-6 z-20 flex flex-col gap-2 bg-slate-900 border border-white/10 rounded-lg p-1">
-            <button onClick={() => setTransform(p => ({...p, k: p.k * 1.2}))} className="p-2 hover:bg-white/10 rounded text-slate-400 hover:text-white transition-colors"><ZoomIn className="w-4 h-4" /></button>
-            <button onClick={() => setTransform(p => ({...p, k: p.k * 0.8}))} className="p-2 hover:bg-white/10 rounded text-slate-400 hover:text-white transition-colors"><ZoomOut className="w-4 h-4" /></button>
-            <button onClick={() => setTransform({x: 0, y: 0, k: 1})} className="p-2 hover:bg-white/10 rounded text-slate-400 hover:text-white transition-colors"><Maximize className="w-4 h-4" /></button>
-          </div>
-
-          <svg className="w-full h-full block" ref={svgRef}>
-            <g transform={`translate(${transform.x + (svgRef.current?.clientWidth || 800) / 2}, ${transform.y + (svgRef.current?.clientHeight || 800) / 2}) scale(${transform.k})`}>
-              {backgroundRings.map(r => <circle key={`ring-${r}`} r={r} fill="none" stroke="#ffffff" strokeOpacity="0.03" strokeWidth="1" strokeDasharray="4 8" />)}
-
-              {layoutLinks.map((link: any) => {
-                // DIM OUT IRRELEVANT CONTACT LINKS WHEN FOCUSING ON A CONTACT OR COMPANY
-                let isLinkDimmed = false;
-                if (currentRoot.category === 'person') {
-                  isLinkDimmed = (link.source.category === 'person' && link.source.id !== currentRoot.id) || 
-                                 (link.target.category === 'person' && link.target.id !== currentRoot.id);
-                } else if (currentRoot.category === 'company') {
-                  isLinkDimmed = (link.source.category === 'person' && !edges.base.has(`${currentRoot.id}|${link.source.id}`)) ||
-                                 (link.target.category === 'person' && !edges.base.has(`${currentRoot.id}|${link.target.id}`));
-                }
-
-                return (
-                  <line 
-                    key={link.id} 
-                    x1={link.source.x} y1={link.source.y} 
-                    x2={link.target.x} y2={link.target.y} 
-                    stroke={getColor(link.target.category)} 
-                    strokeOpacity={isLinkDimmed ? 0.15 : 0.4} 
-                    strokeWidth={1} 
-                    className="transition-all duration-500 ease-out" 
-                  />
-                );
-              })}
-
-              {layoutNodes.map((node) => {
-                const isExpandable = viewMode === 'industry' ? node.category !== 'executive' : node.category !== 'person';
-                const isExpanded = expandedIds.has(node.id);
-                const isLeft = Math.cos(node.angle) < 0;
-                
-                // SMART FADE FOR NON-FOCUS CONTACTS
-                let isDimmed = false;
-                if (currentRoot.category === 'person') {
-                  isDimmed = node.category === 'person' && node.id !== currentRoot.id;
-                } else if (currentRoot.category === 'company') {
-                  isDimmed = node.category === 'person' && !edges.base.has(`${currentRoot.id}|${node.id}`);
-                }
-
-                // STRICT LEFT/RIGHT ANCHORING
-                let anchor: "start" | "end" | "middle" = isLeft ? 'end' : 'start';
-                let tx = isLeft ? -16 : 16;
-                let ty = 4;
-                let subTy = 18;
-
-                // Center the root node
-                if (node.depth === 0) {
-                  anchor = 'middle'; 
-                  tx = 0; 
-                  ty = 32; 
-                  subTy = 48;
-                }
-                
-                return (
-                  <g key={node.id} transform={`translate(${node.x}, ${node.y})`} 
-                    className={`transition-all duration-500 ease-out group cursor-pointer ${isDimmed ? 'opacity-20 hover:opacity-100' : 'opacity-100'}`}
-                    onClick={(e) => { e.stopPropagation(); handleNodeClick(node); }}
-                    onContextMenu={(e) => { 
-                      if (isExpandable) toggleExpand(e, node.id); 
-                      else e.preventDefault(); 
-                    }}
-                  >
-                    <circle r={24} fill="transparent" />
-                    <circle r={node.depth === 0 ? 14 : 10} fill={getColor(node.category)} stroke={getStroke(node.category)} strokeWidth={2}
-                      className="transition-all duration-200 group-hover:stroke-white" style={{ filter: isExpanded ? `drop-shadow(0 0 8px ${getColor(node.category)}80)` : 'none' }} />
-                    
-                    {isExpandable && !isExpanded && <circle r={15} fill="none" stroke={getColor(node.category)} strokeWidth={1.5} strokeOpacity={0.5} strokeDasharray="2 2" className="animate-[spin_4s_linear_infinite]" />}
-
-                    {/* Standard Horizontal Label */}
-                    <text 
-                      x={tx} 
-                      y={ty} 
-                      textAnchor={anchor}
-                      fill={node.depth === 0 ? '#fff' : '#cbd5e1'} 
-                      className={`text-[11px] select-none transition-colors group-hover:text-white ${node.depth === 0 ? 'font-bold tracking-widest text-sm' : 'font-medium'}`}
-                    >
-                      {node.label}
-                    </text>
-                    
-                    {node.subLabel && (
-                      <text 
-                        x={tx} 
-                        y={subTy} 
-                        textAnchor={anchor} 
-                        fill="#64748b" 
-                        className={`text-[9px] select-none transition-colors group-hover:text-slate-300 ${node.depth === 0 ? 'tracking-wide' : ''}`}
-                      >
-                        {node.subLabel}
-                      </text>
-                    )}
-                  </g>
-                );
-              })}
-            </g>
-          </svg>
-        </div>
+          Industry POV
+        </button>
+        <button
+          onClick={() => handleViewChange('exec')}
+          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+            viewMode === 'exec'
+              ? 'bg-blue-600 text-white'
+              : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
+          }`}
+        >
+          Executive POV
+        </button>
       </div>
+
+      <label className="hidden cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-slate-900/80 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 md:flex">
+        <Upload className="h-3.5 w-3.5" />
+        Upload CSV
+        <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} />
+      </label>
+
+      <div className="relative hidden md:block" ref={searchContainerRef}>
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setShowSearchDropdown(true);
+          }}
+          onFocus={() => setShowSearchDropdown(true)}
+          placeholder="Search companies, contacts, industries..."
+          className="w-80 rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500/40 focus:bg-white/10"
+        />
+
+        {showSearchDropdown && searchQuery.length >= 3 ? (
+          <div className="absolute right-0 top-full z-30 mt-2 w-80 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl">
+            {searchResults.length > 0 ? (
+              <ul className="max-h-80 overflow-y-auto">
+                {searchResults.map(node => (
+                  <li
+                    key={`search-${node.id}`}
+                    onClick={() => {
+                      handleNodeClick(node);
+                      setShowSearchDropdown(false);
+                      setSearchQuery('');
+                    }}
+                    className="flex cursor-pointer flex-col gap-1 border-b border-white/5 px-4 py-3 transition-colors last:border-0 hover:bg-white/5"
+                  >
+                    <div className="text-sm font-medium text-white">{node.label}</div>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                      <span className="inline-block h-1.5 w-1.5 rounded-full shadow-sm" style={{ backgroundColor: getColor(node.category) }} />
+                      <span className="font-semibold uppercase tracking-wider">{node.category}</span>
+                      {node.subLabel ? <span className="truncate text-slate-500">{node.subLabel}</span> : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="px-4 py-4 text-center text-sm text-slate-400">
+                No matches found for <span className="text-white">{searchQuery}</span>
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
+    </>
+  );
+
+  const sidebar = (
+    <div className="space-y-8">
+      <section className="rounded-3xl border border-white/5 bg-white/[0.03] p-5">
+        <div className="flex items-center gap-3">
+          <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-300">
+            <Network className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-[0.35em] text-slate-500">Focus</div>
+            <div className="mt-1 text-lg font-semibold text-white">{currentRoot.label}</div>
+          </div>
+        </div>
+        <p className="mt-4 text-sm leading-6 text-slate-400">
+          Explore the relationship map by industry, executive, company, and contact.
+        </p>
+      </section>
+
+      <section>
+        <div className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] text-slate-500">
+          Network Snapshot
+        </div>
+        <ul className="space-y-3">
+          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
+            <div className="flex items-center gap-3 text-sm text-slate-300"><span className="h-2 w-2 rounded-full bg-amber-500" />Executives</div>
+            <div className="text-right"><div className="text-sm font-semibold text-white">{focusStats.executive}</div><div className="text-[10px] text-slate-500">{visibleExecs} rendered</div></div>
+          </li>
+          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
+            <div className="flex items-center gap-3 text-sm text-slate-300"><span className="h-2 w-2 rounded-full bg-blue-500" />Industries</div>
+            <div className="text-right"><div className="text-sm font-semibold text-white">{focusStats.industry}</div><div className="text-[10px] text-slate-500">{visibleInds} rendered</div></div>
+          </li>
+          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
+            <div className="flex items-center gap-3 text-sm text-slate-300"><span className="h-2 w-2 rounded-full bg-purple-500" />Companies</div>
+            <div className="text-right"><div className="text-sm font-semibold text-white">{focusStats.company}</div><div className="text-[10px] text-slate-500">{visibleComps} rendered</div></div>
+          </li>
+          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
+            <div className="flex items-center gap-3 text-sm text-slate-300"><span className="h-2 w-2 rounded-full bg-emerald-500" />Contacts</div>
+            <div className="text-right"><div className="text-sm font-semibold text-white">{focusStats.person}</div><div className="text-[10px] text-slate-500">{visiblePersons} rendered</div></div>
+          </li>
+        </ul>
+      </section>
     </div>
+  );
+
+  return (
+    <ExplorerShell
+      pageTitle="Contact Explorer"
+      pageSubtitle="Relationship map using the same navigation frame as the Budget Explorer."
+      controls={controls}
+      sidebar={sidebar}
+      breadcrumb={
+        <div className="flex items-center gap-2 text-xs">
+          <span className="font-semibold uppercase tracking-[0.35em] text-slate-500">Focus</span>
+          {path.map((p, i) => (
+            <React.Fragment key={p.id}>
+              {i > 0 ? <span className="text-slate-600">/</span> : null}
+              <button
+                onClick={() => {
+                  setPath(prev => prev.slice(0, i + 1));
+                  setTransform({ x: 0, y: 0, k: 1 });
+                }}
+                className="font-medium text-slate-300 transition hover:text-white"
+              >
+                {p.label}
+              </button>
+            </React.Fragment>
+          ))}
+        </div>
+      }
+    >
+      <div
+        className="relative h-full overflow-hidden bg-slate-950 cursor-grab active:cursor-grabbing"
+        onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
+        <div className="absolute right-6 top-6 z-20 flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/90 p-1">
+          <button onClick={() => setTransform(p => ({...p, k: p.k * 1.2}))} className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"><ZoomIn className="h-4 w-4" /></button>
+          <button onClick={() => setTransform(p => ({...p, k: p.k * 0.8}))} className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"><ZoomOut className="h-4 w-4" /></button>
+          <button onClick={() => setTransform({x: 0, y: 0, k: 1})} className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"><Maximize className="h-4 w-4" /></button>
+        </div>
+
+        <svg className="block h-full w-full" ref={svgRef}>
+          <g transform={`translate(${transform.x + viewportSize.width / 2}, ${transform.y + viewportSize.height / 2}) scale(${transform.k})`}>
+            {backgroundRings.map(r => <circle key={`ring-${r}`} r={r} fill="none" stroke="#ffffff" strokeOpacity="0.03" strokeWidth="1" strokeDasharray="4 8" />)}
+
+            {layoutLinks.map((link) => {
+              let isLinkDimmed = false;
+              if (currentRoot.category === 'person') {
+                isLinkDimmed = (link.source.category === 'person' && link.source.id !== currentRoot.id) ||
+                               (link.target.category === 'person' && link.target.id !== currentRoot.id);
+              } else if (currentRoot.category === 'company') {
+                isLinkDimmed = (link.source.category === 'person' && !edges.base.has(`${currentRoot.id}|${link.source.id}`)) ||
+                               (link.target.category === 'person' && !edges.base.has(`${currentRoot.id}|${link.target.id}`));
+              }
+
+              return (
+                <line
+                  key={link.id}
+                  x1={link.source.x} y1={link.source.y}
+                  x2={link.target.x} y2={link.target.y}
+                  stroke={getColor(link.target.category)}
+                  strokeOpacity={isLinkDimmed ? 0.15 : 0.4}
+                  strokeWidth={1}
+                  className="transition-all duration-500 ease-out"
+                />
+              );
+            })}
+
+            {layoutNodes.map((node) => {
+              const isExpandable = viewMode === 'industry' ? node.category !== 'executive' : node.category !== 'person';
+              const isExpanded = expandedIds.has(node.id);
+              const isLeft = Math.cos(node.angle) < 0;
+
+              let isDimmed = false;
+              if (currentRoot.category === 'person') {
+                isDimmed = node.category === 'person' && node.id !== currentRoot.id;
+              } else if (currentRoot.category === 'company') {
+                isDimmed = node.category === 'person' && !edges.base.has(`${currentRoot.id}|${node.id}`);
+              }
+
+              let anchor: "start" | "end" | "middle" = isLeft ? 'end' : 'start';
+              let tx = isLeft ? -16 : 16;
+              let ty = 4;
+              let subTy = 18;
+
+              if (node.depth === 0) {
+                anchor = 'middle';
+                tx = 0;
+                ty = 32;
+                subTy = 48;
+              }
+
+              return (
+                <g key={node.id} transform={`translate(${node.x}, ${node.y})`}
+                  className={`transition-all duration-500 ease-out group cursor-pointer ${isDimmed ? 'opacity-20 hover:opacity-100' : 'opacity-100'}`}
+                  onClick={(e) => { e.stopPropagation(); handleNodeClick(node); }}
+                  onContextMenu={(e) => {
+                    if (isExpandable) toggleExpand(e, node.id);
+                    else e.preventDefault();
+                  }}
+                >
+                  <circle r={24} fill="transparent" />
+                  <circle r={node.depth === 0 ? 14 : 10} fill={getColor(node.category)} stroke={getStroke(node.category)} strokeWidth={2}
+                    className="transition-all duration-200 group-hover:stroke-white" style={{ filter: isExpanded ? `drop-shadow(0 0 8px ${getColor(node.category)}80)` : 'none' }} />
+
+                  {isExpandable && !isExpanded && <circle r={15} fill="none" stroke={getColor(node.category)} strokeWidth={1.5} strokeOpacity={0.5} strokeDasharray="2 2" className="animate-[spin_4s_linear_infinite]" />}
+
+                  <text
+                    x={tx}
+                    y={ty}
+                    textAnchor={anchor}
+                    fill={node.depth === 0 ? '#fff' : '#cbd5e1'}
+                    className={`text-[11px] select-none transition-colors group-hover:text-white ${node.depth === 0 ? 'font-bold tracking-widest text-sm' : 'font-medium'}`}
+                  >
+                    {node.label}
+                  </text>
+
+                  {node.subLabel && (
+                    <text
+                      x={tx}
+                      y={subTy}
+                      textAnchor={anchor}
+                      fill="#64748b"
+                      className={`text-[9px] select-none transition-colors group-hover:text-slate-300 ${node.depth === 0 ? 'tracking-wide' : ''}`}
+                    >
+                      {node.subLabel}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          </g>
+        </svg>
+      </div>
+    </ExplorerShell>
   );
 }
