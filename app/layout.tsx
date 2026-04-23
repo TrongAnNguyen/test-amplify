@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Omnicom Explorer",
+  title: "Omnicom Oceania Explorer",
   description: "Budget and contact exploration views for Omnicom Oceania",
 };
 
