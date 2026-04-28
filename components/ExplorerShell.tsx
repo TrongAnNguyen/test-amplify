@@ -33,15 +33,21 @@ export default function ExplorerShell({
   children,
 }: ExplorerShellProps) {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<ThemeMode>(() => {
-    if (typeof window === "undefined") return "light";
-    const savedTheme = window.localStorage.getItem("theme") as ThemeMode | null;
-    return savedTheme ?? getSystemTheme();
-  });
+  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<ThemeMode>("light");
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
+    setMounted(true);
+    const savedTheme = window.localStorage.getItem("theme") as ThemeMode | null;
+    const initialTheme = savedTheme ?? getSystemTheme();
+    setTheme(initialTheme);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      document.documentElement.classList.toggle("dark", theme === "dark");
+    }
+  }, [theme, mounted]);
 
   const toggleTheme = () => {
     const nextTheme: ThemeMode = theme === "dark" ? "light" : "dark";
