@@ -14,51 +14,7 @@ import ExplorerShell from "@/components/ExplorerShell";
 // --- CONFIGURATION ---
 const RING_RADIUS = 280; // Increased to provide more breathing room
 
-// --- DEFAULT DATA (Based on your CSV Snippet) ---
-const DEFAULT_CSV = `"Primary Contact","Category","Company / Brand","Client Name","Client Title"
-"Lee Leggett","Retail & Marketplaces","7-Eleven","Fiona Hayes","CEO"
-"Lee Leggett","Retail & Marketplaces","7-Eleven","Matt Keogh","Chief Commercial Officer"
-"Lee Leggett","Retail & Marketplaces","7-Eleven","Adam Jacka","CMO"
-"Lee Leggett","Retail & Marketplaces","Style Runner","Anna Brennan","General Manager"
-"Lee Leggett","Retail & Marketplaces","Rachel Gilbert","Rachel Gilbert","Founder"
-"Lee Leggett","Retail & Marketplaces","Bunnings","Justine Mills","CMO"
-"Lee Leggett","Retail & Marketplaces","Bunnings","Sarah Horder","Marketing Lead"
-"Lee Leggett","Retail & Marketplaces","Christian Dior","Liesel Petersen","Development Manager"
-"Lee Leggett","Retail & Marketplaces","Coles","Kate Bailey","General Manager Brand, Digital & Media"
-"Lee Leggett","Retail & Marketplaces","Iconic","Georgia Thomas","Director of Brand Growth & Content"
-"Lee Leggett","Retail & Marketplaces","Kmart & Target","Rennie Freer","CMO"
-"Lee Leggett","FMCG, Food & Beverage","Arnotts","Jenni Dill","CMO"
-"Lee Leggett","FMCG, Food & Beverage","Asahi","Lauren Fildes","General Manager Brand and Portfolio"
-"Lee Leggett","FMCG, Food & Beverage","Guzman y Gomez","Lara Thom","Global CMO"
-"Lee Leggett","FMCG, Food & Beverage","Guzman y Gomez","Naomi Higgins","Director of Operational Excellence"
-"Lee Leggett","FMCG, Food & Beverage","Harris Farm","Angus Harris","Co-CEO"
-"Lee Leggett","FMCG, Food & Beverage","KFC","Joanna Baxter","Group Marketing Manager - Retail"
-"Lee Leggett","FMCG, Food & Beverage","McDonalds","Annabel Fribrence","CMO"
-"Lee Leggett","Media","ABC","Milla McPhee","Director of Audiences"
-"Lee Leggett","Media","Channel 9","Clive Bingwah","MD WA"
-"Lee Leggett","Media","Guardian AU","Danika Johnson","Director of Commercial Partnerships"
-"Lee Leggett","Media","Hoyts Group","Damian Keogh","President & CEO"
-"Lee Leggett","Media","ITV Australia","Beth Hart","Chief Content Officer"
-"Lee Leggett","Media","NewsCorp","Michael Miller","Chairman"
-"Lee Leggett","Media","NewsCorp","Bettina Brown","Director, Consumer Marketing"
-"Lee Leggett","Media","NewsCorp","Diana Kay","GM, Events & Experiences"
-"Lee Leggett","Media","Netflix","Rebecca Nadilo","Director, Marketing Partnerships"
-"Lee Leggett","Industry","Marketing Academy","Sherilyn Shackell","Founder & CEO"
-"Lee Leggett","Industry","System 1","Jon Evans","Chief Customer Officer"
-"Lee Leggett","Industry","AANA","Josh Faulks","CEO"`;
-
-// --- SUPPLEMENTAL DATA FOR MIKE NAPOLITANO ---
-const MIKE_SUPPLEMENT = [
-  [
-    "Mike Napolitano",
-    "FMCG, Food & Beverage",
-    "McDonalds",
-    "Annabel Fribrence",
-    "CMO",
-  ],
-  ["Mike Napolitano", "Technology", "Canva", "Zach Kitschke", "CMO"],
-  ["Mike Napolitano", "Technology", "Atlassian", "Robert Chatwani", "CMO"],
-];
+const DEFAULT_CSV_PATH = "/data/default-graph-data.csv";
 
 // --- CUSTOM CSV PARSER ---
 const parseCSV = (str: string) => {
@@ -126,7 +82,7 @@ type LayoutLink = {
 };
 
 export default function MapComponent() {
-  const [csvString, setCsvString] = useState(DEFAULT_CSV);
+  const [csvString, setCsvString] = useState("");
   const [viewMode, setViewMode] = useState<"industry" | "exec">("industry"); // 'industry' or 'exec'
 
   // SVG Pan/Zoom state
@@ -140,6 +96,34 @@ export default function MapComponent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadDefaultCsv = async () => {
+      try {
+        const response = await fetch(DEFAULT_CSV_PATH);
+        if (!response.ok) {
+          throw new Error(
+            `Failed to load CSV: ${response.status} ${response.statusText}`,
+          );
+        }
+
+        const csvText = await response.text();
+        if (isActive) {
+          setCsvString(csvText);
+        }
+      } catch (error) {
+        console.error("Unable to load default graph CSV", error);
+      }
+    };
+
+    void loadDefaultCsv();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   // Styling helpers
   const getColor = (c: string) =>
@@ -167,7 +151,7 @@ export default function MapComponent() {
   const { nodesMap, edges, execNodes, indNodes, combinedRows } = useMemo(() => {
     const rawArray = parseCSV(csvString);
     const dataRows = rawArray.slice(1);
-    const allRows = [...dataRows, ...MIKE_SUPPLEMENT];
+    const allRows = [...dataRows];
 
     // Safely filter out any empty or malformed rows from the CSV
     const validRows = allRows.filter(
