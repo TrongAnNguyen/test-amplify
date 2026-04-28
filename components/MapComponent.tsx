@@ -634,7 +634,7 @@ export default function MapComponent() {
       <div className="hidden items-center gap-1 rounded-xl border border-input bg-muted p-1 md:flex">
         <button
           onClick={() => handleViewChange("industry")}
-          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+          className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
             viewMode === "industry"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -644,13 +644,13 @@ export default function MapComponent() {
         </button>
         <button
           onClick={() => handleViewChange("exec")}
-          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+          className={`cursor-pointer rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
             viewMode === "exec"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
-          Executive POV
+          Omnicom Leadership POV
         </button>
       </div>
 
@@ -755,7 +755,7 @@ export default function MapComponent() {
           <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
             <div className="flex items-center gap-3 text-sm text-foreground">
               <span className="h-2 w-2 rounded-full bg-amber-500" />
-              Executives
+              Omnicom Leadership
             </div>
             <div className="text-right">
               <div className="text-sm font-semibold text-foreground">
