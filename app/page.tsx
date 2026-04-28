@@ -1,9 +1,9 @@
-import BudgetExplorer from "@/components/BudgetExplorer";
+import MapComponent from "@/components/MapComponent";
 
 export default function Home() {
   return (
     <main className="min-h-screen overflow-hidden">
-      <BudgetExplorer />
+      <MapComponent />
     </main>
   );
 }

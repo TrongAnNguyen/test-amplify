@@ -14,8 +14,8 @@ interface ExplorerShellProps {
 }
 
 const menuItems = [
-  { href: "/", label: "Budget Explorer" },
-  { href: "/contact-explorer", label: "Contact Explorer" },
+  { href: "/", label: "Contact Explorer" },
+  { href: "/budget-explorer", label: "Budget Explorer" },
 ];
 
 export default function ExplorerShell({
