@@ -1456,7 +1456,7 @@ export default function BudgetExplorer() {
                         <div
                           className="mt-1 font-semibold"
                           style={{
-                            color: "white",
+                            color: palette.stroke,
                             fontSize: circle.r > 118 ? 14 : 12,
                           }}
                         >
@@ -1481,7 +1481,7 @@ export default function BudgetExplorer() {
                         <div
                           className="mt-1 font-semibold"
                           style={{
-                            color: "white",
+                            color: palette.stroke,
                             fontSize: circle.r > 100 ? 14 : 12,
                           }}
                         >
