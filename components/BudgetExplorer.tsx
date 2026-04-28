@@ -1058,7 +1058,7 @@ export default function BudgetExplorer() {
 
   const controls = (
     <>
-      <div className="hidden items-center gap-1 rounded-xl border border-white/10 bg-slate-900/80 p-1 md:flex">
+      <div className="hidden items-center gap-1 rounded-xl border border-input bg-muted p-1 md:flex">
         <button
           onClick={() => {
             setViewMode("client");
@@ -1066,8 +1066,8 @@ export default function BudgetExplorer() {
           }}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
             viewMode === "client"
-              ? "bg-blue-600 text-white"
-              : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
           Client POV
@@ -1079,21 +1079,21 @@ export default function BudgetExplorer() {
           }}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
             viewMode === "category"
-              ? "bg-blue-600 text-white"
-              : "text-slate-500 hover:text-slate-300"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           Category POV
         </button>
       </div>
 
-      <div className="hidden items-center gap-1 rounded-xl border border-white/10 bg-slate-900/80 p-1 md:flex">
+      <div className="hidden items-center gap-1 rounded-xl border border-input bg-muted p-1 md:flex">
         <button
           onClick={() => setInteractionMode("hand")}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
             interactionMode === "hand"
-              ? "bg-slate-200 text-slate-950"
-              : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
+              ? "bg-foreground text-background"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
           Hand (H)
@@ -1102,8 +1102,8 @@ export default function BudgetExplorer() {
           onClick={() => setInteractionMode("zoom")}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
             interactionMode === "zoom"
-              ? "bg-slate-200 text-slate-950"
-              : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
+              ? "bg-foreground text-background"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
           Zoom (Z)
@@ -1111,15 +1111,15 @@ export default function BudgetExplorer() {
       </div>
 
       <div className="relative hidden md:block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search categories or clients..."
-          className="w-64 rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500/40 focus:bg-white/10"
+          className="w-64 rounded-xl border border-input bg-muted py-2 pl-9 pr-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:bg-muted"
         />
         {searchResults.length > 0 ? (
-          <div className="absolute right-0 top-full z-30 mt-2 w-64 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl">
+          <div className="absolute right-0 top-full z-30 mt-2 w-64 overflow-hidden rounded-2xl border border-input bg-card shadow-2xl">
             {searchResults.map((result) => (
               <button
                 key={result.id}
@@ -1127,10 +1127,10 @@ export default function BudgetExplorer() {
                   handleFocusChange(result.id);
                   setSearchQuery("");
                 }}
-                className="flex w-full items-center justify-between border-b border-white/5 px-4 py-3 text-left text-sm text-slate-300 transition last:border-b-0 hover:bg-white/5 hover:text-white"
+                className="flex w-full items-center justify-between border-b border-border px-4 py-3 text-left text-sm text-foreground transition last:border-b-0 hover:bg-muted hover:text-foreground"
               >
                 <span>{result.label}</span>
-                <span className="text-[10px] uppercase tracking-[0.25em] text-slate-500">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
                   {result.level}
                 </span>
               </button>
@@ -1143,58 +1143,58 @@ export default function BudgetExplorer() {
 
   const sidebar = (
     <div className="space-y-8">
-      <section className="rounded-3xl border border-white/5 bg-white/[0.03] p-5">
+      <section className="rounded-3xl border border-border bg-card p-5">
         <div className="flex items-center gap-3">
           <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-300">
             <CircleDollarSign className="h-5 w-5" />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-[0.35em] text-slate-500">Focus</div>
-            <div className="mt-1 text-lg font-semibold text-white">{focusNode.label}</div>
+            <div className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Focus</div>
+            <div className="mt-1 text-lg font-semibold text-foreground">{focusNode.label}</div>
           </div>
         </div>
-        <p className="mt-4 text-sm leading-6 text-slate-400">
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">
           Start at category level, click through to clients, then drill into budget lines.
         </p>
       </section>
 
       <section>
-        <div className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] text-slate-500">
+        <div className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] text-muted-foreground">
           Portfolio Snapshot
         </div>
         <div className="space-y-3">
-          <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-            <div className="text-xs uppercase tracking-[0.3em] text-slate-500">Total Budget</div>
-            <div className="mt-2 text-xl font-semibold text-white">
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Total Budget</div>
+            <div className="mt-2 text-xl font-semibold text-foreground">
               {formatCurrency(focusStats.totalAmount)}
             </div>
           </div>
-          <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-4">
-            <div className="text-xs uppercase tracking-[0.3em] text-slate-500">Omnicom Share</div>
-            <div className="mt-2 text-xl font-semibold text-white">
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Omnicom Share</div>
+            <div className="mt-2 text-xl font-semibold text-foreground">
               {formatCurrency(focusStats.omnicomAmount)}
             </div>
-            <div className="mt-1 text-xs text-emerald-300">{focusStats.share}% of visible scope</div>
+            <div className="mt-1 text-xs text-emerald-500">{focusStats.share}% of visible scope</div>
           </div>
         </div>
       </section>
 
       <section>
-        <div className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] text-slate-500">
+        <div className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] text-muted-foreground">
           Counts
         </div>
         <ul className="space-y-3">
-          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
-            <span className="text-sm text-slate-300">Categories</span>
-            <span className="text-sm font-semibold text-white">{focusStats.categoryCount}</span>
+          <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <span className="text-sm text-foreground">Categories</span>
+            <span className="text-sm font-semibold text-foreground">{focusStats.categoryCount}</span>
           </li>
-          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
-            <span className="text-sm text-slate-300">Clients</span>
-            <span className="text-sm font-semibold text-white">{focusStats.clientCount}</span>
+          <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <span className="text-sm text-foreground">Clients</span>
+            <span className="text-sm font-semibold text-foreground">{focusStats.clientCount}</span>
           </li>
-          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
-            <span className="text-sm text-slate-300">Visible Children</span>
-            <span className="text-sm font-semibold text-white">{focusStats.budgetCount}</span>
+          <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <span className="text-sm text-foreground">Visible Children</span>
+            <span className="text-sm font-semibold text-foreground">{focusStats.budgetCount}</span>
           </li>
         </ul>
       </section>
@@ -1209,13 +1209,13 @@ export default function BudgetExplorer() {
       sidebar={sidebar}
       breadcrumb={
         <div className="flex items-center gap-2 text-xs">
-          <span className="font-semibold uppercase tracking-[0.35em] text-slate-500">Focus</span>
+          <span className="font-semibold uppercase tracking-[0.35em] text-muted-foreground">Focus</span>
           {breadcrumb.map((node, index) => (
             <div key={node.id} className="flex items-center gap-2">
-              {index > 0 ? <span className="text-slate-600">/</span> : null}
+              {index > 0 ? <span className="text-muted-foreground">/</span> : null}
               <button
                 onClick={() => handleFocusChange(node.id)}
-                className="font-medium text-slate-300 transition hover:text-white"
+                className="font-medium text-foreground transition hover:text-foreground"
               >
                 {node.label}
               </button>
@@ -1239,24 +1239,24 @@ export default function BudgetExplorer() {
         onMouseLeave={handleMouseUp}
         onClick={handleCanvasClick}
       >
-        <div className="absolute inset-0 bg-slate-950" />
+        <div className="absolute inset-0 bg-background" />
 
-        <div className="absolute right-6 top-6 z-20 flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/90 p-1">
+        <div className="absolute right-6 top-6 z-20 flex flex-col gap-2 rounded-2xl border border-input bg-(--card)/90 p-1">
           <button
             onClick={() => setZoom((value) => Math.min(2.5, value * 1.15))}
-            className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            className="rounded-xl p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <ZoomIn className="h-4 w-4" />
           </button>
           <button
             onClick={() => setZoom((value) => Math.max(0.8, value * 0.85))}
-            className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            className="rounded-xl p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <ZoomOut className="h-4 w-4" />
           </button>
           <button
             onClick={() => resetViewport()}
-            className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            className="rounded-xl p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <Maximize className="h-4 w-4" />
           </button>
@@ -1277,7 +1277,7 @@ export default function BudgetExplorer() {
                 ? [120, 220, 344].map((ring) => (
                     <div
                       key={ring}
-                      className="absolute rounded-full border border-dashed border-white/10"
+                      className="absolute rounded-full border border-dashed border-input"
                       style={{
                         width: ring * 2,
                         height: ring * 2,
@@ -1289,11 +1289,11 @@ export default function BudgetExplorer() {
                 : null}
 
               {focusNode.level !== "client" ? (
-              <div className="pointer-events-none absolute left-1/2 top-[136px] -translate-x-1/2 text-center">
-                <div className="text-base font-semibold tracking-[0.24em] text-white">
+              <div className="pointer-events-none absolute left-1/2 top-34 -translate-x-1/2 text-center">
+                <div className="text-base font-semibold tracking-[0.24em] text-foreground">
                   {focusNode.level === "root" ? "CATEGORIES" : focusNode.label.toUpperCase()}
                 </div>
-                <div className="mt-1 text-[11px] text-slate-400">
+                <div className="mt-1 text-[11px] text-muted-foreground">
                   {focusNode.level === "root"
                     ? "Click a category to see its clients"
                     : focusNode.level === "category"
@@ -1429,7 +1429,7 @@ export default function BudgetExplorer() {
                       </div>
                     ) : hasInlineBudgetAmount ? (
                       <div
-                        className="pointer-events-none text-center font-bold text-white"
+                        className="pointer-events-none text-center font-bold text-foreground"
                         style={{
                           fontSize: circle.r > 32 ? 10 : 8,
                           textShadow: "0 2px 10px rgba(2, 6, 23, 0.85)",
@@ -1469,7 +1469,7 @@ export default function BudgetExplorer() {
                     ) : null}
                     <div className="min-w-0">
                       <div
-                        className="text-[11px] font-semibold leading-tight text-slate-100"
+                        className="text-[11px] font-semibold leading-tight text-foreground"
                         style={{
                           display: "-webkit-box",
                           WebkitLineClamp: 2,

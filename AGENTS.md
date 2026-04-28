@@ -21,6 +21,9 @@
 - Components: `PascalCase` filenames and exports (example: `MapComponent.tsx`).
 - Route files: Next.js conventions (`page.tsx`, `layout.tsx`).
 - Styling: update `app/globals.css` for shared styles; keep component-local styling close to feature code.
+- Tailwind classnames: write mobile-first utilities and add responsive variants (`sm:`, `md:`, `lg:`) progressively.
+- Tailwind classnames: prefer semantic tokens and scale utilities (`bg-background`, `text-foreground`, spacing/size scale) over raw values.
+- Tailwind classnames: use arbitrary values only when no token or standard utility can express the style.
 - Linting: use `eslint` via `npm run lint`; fix warnings before opening a PR.
 
 ## Testing Guidelines

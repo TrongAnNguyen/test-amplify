@@ -155,7 +155,7 @@ export default function MapComponent() {
   const getStroke = (c: string) =>
     (
       ({
-        center: "#fff",
+        center: "#374151",
         executive: "#b45309",
         industry: "#1e3a8a",
         company: "#4c1d95",
@@ -631,13 +631,13 @@ export default function MapComponent() {
 
   const controls = (
     <>
-      <div className="hidden items-center gap-1 rounded-xl border border-white/10 bg-slate-900/80 p-1 md:flex">
+      <div className="hidden items-center gap-1 rounded-xl border border-input bg-muted p-1 md:flex">
         <button
           onClick={() => handleViewChange("industry")}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
             viewMode === "industry"
-              ? "bg-blue-600 text-white"
-              : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
           Industry POV
@@ -646,15 +646,15 @@ export default function MapComponent() {
           onClick={() => handleViewChange("exec")}
           className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
             viewMode === "exec"
-              ? "bg-blue-600 text-white"
-              : "text-slate-400 hover:bg-white/5 hover:text-slate-100"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
           Executive POV
         </button>
       </div>
 
-      <label className="hidden cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-slate-900/80 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 md:flex">
+      <label className="hidden cursor-pointer items-center gap-2 rounded-xl border border-input bg-muted px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-muted md:flex">
         <Upload className="h-3.5 w-3.5" />
         Upload CSV
         <input
@@ -666,7 +666,7 @@ export default function MapComponent() {
       </label>
 
       <div className="relative hidden md:block" ref={searchContainerRef}>
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
           value={searchQuery}
@@ -676,11 +676,11 @@ export default function MapComponent() {
           }}
           onFocus={() => setShowSearchDropdown(true)}
           placeholder="Search companies, contacts or industries"
-          className="w-80 rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-blue-500/40 focus:bg-white/10"
+          className="w-80 rounded-xl border border-input bg-muted py-2 pl-9 pr-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-ring focus:bg-muted"
         />
 
         {showSearchDropdown && searchQuery.length >= 3 ? (
-          <div className="absolute right-0 top-full z-30 mt-2 w-80 overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-2xl">
+          <div className="absolute right-0 top-full z-30 mt-2 w-80 overflow-hidden rounded-2xl border border-input bg-card shadow-2xl">
             {searchResults.length > 0 ? (
               <ul className="max-h-80 overflow-y-auto">
                 {searchResults.map((node) => (
@@ -691,12 +691,12 @@ export default function MapComponent() {
                       setShowSearchDropdown(false);
                       setSearchQuery("");
                     }}
-                    className="flex cursor-pointer flex-col gap-1 border-b border-white/5 px-4 py-3 transition-colors last:border-0 hover:bg-white/5"
+                    className="flex cursor-pointer flex-col gap-1 border-b border-border px-4 py-3 transition-colors last:border-0 hover:bg-muted"
                   >
-                    <div className="text-sm font-medium text-white">
+                    <div className="text-sm font-medium text-foreground">
                       {node.label}
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                       <span
                         className="inline-block h-1.5 w-1.5 rounded-full shadow-sm"
                         style={{ backgroundColor: getColor(node.category) }}
@@ -705,7 +705,7 @@ export default function MapComponent() {
                         {node.category}
                       </span>
                       {node.subLabel ? (
-                        <span className="truncate text-slate-500">
+                        <span className="truncate text-muted-foreground">
                           {node.subLabel}
                         </span>
                       ) : null}
@@ -714,9 +714,9 @@ export default function MapComponent() {
                 ))}
               </ul>
             ) : (
-              <div className="px-4 py-4 text-center text-sm text-slate-400">
+              <div className="px-4 py-4 text-center text-sm text-muted-foreground">
                 No matches found for{" "}
-                <span className="text-white">{searchQuery}</span>
+                <span className="text-foreground">{searchQuery}</span>
               </div>
             )}
           </div>
@@ -727,83 +727,83 @@ export default function MapComponent() {
 
   const sidebar = (
     <div className="space-y-8">
-      <section className="rounded-3xl border border-white/5 bg-white/[0.03] p-5">
+      <section className="rounded-3xl border border-border bg-card p-5">
         <div className="flex items-center gap-3">
           <div className="rounded-2xl bg-blue-500/10 p-3 text-blue-300">
             <Network className="h-5 w-5" />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-[0.35em] text-slate-500">
+            <div className="text-xs uppercase tracking-[0.35em] text-muted-foreground">
               Focus
             </div>
-            <div className="mt-1 text-lg font-semibold text-white">
+            <div className="mt-1 text-lg font-semibold text-foreground">
               {currentRoot.label}
             </div>
           </div>
         </div>
-        <p className="mt-4 text-sm leading-6 text-slate-400">
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">
           Explore the relationship map by industry, executive, company, and
           contact.
         </p>
       </section>
 
       <section>
-        <div className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] text-slate-500">
+        <div className="mb-4 text-[10px] font-semibold uppercase tracking-[0.35em] text-muted-foreground">
           Network Snapshot
         </div>
         <ul className="space-y-3">
-          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
-            <div className="flex items-center gap-3 text-sm text-slate-300">
+          <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <div className="flex items-center gap-3 text-sm text-foreground">
               <span className="h-2 w-2 rounded-full bg-amber-500" />
               Executives
             </div>
             <div className="text-right">
-              <div className="text-sm font-semibold text-white">
+              <div className="text-sm font-semibold text-foreground">
                 {focusStats.executive}
               </div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-[10px] text-muted-foreground">
                 {visibleExecs} rendered
               </div>
             </div>
           </li>
-          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
-            <div className="flex items-center gap-3 text-sm text-slate-300">
+          <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <div className="flex items-center gap-3 text-sm text-foreground">
               <span className="h-2 w-2 rounded-full bg-blue-500" />
               Industries
             </div>
             <div className="text-right">
-              <div className="text-sm font-semibold text-white">
+              <div className="text-sm font-semibold text-foreground">
                 {focusStats.industry}
               </div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-[10px] text-muted-foreground">
                 {visibleInds} rendered
               </div>
             </div>
           </li>
-          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
-            <div className="flex items-center gap-3 text-sm text-slate-300">
+          <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <div className="flex items-center gap-3 text-sm text-foreground">
               <span className="h-2 w-2 rounded-full bg-purple-500" />
               Companies
             </div>
             <div className="text-right">
-              <div className="text-sm font-semibold text-white">
+              <div className="text-sm font-semibold text-foreground">
                 {focusStats.company}
               </div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-[10px] text-muted-foreground">
                 {visibleComps} rendered
               </div>
             </div>
           </li>
-          <li className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.03] px-4 py-3">
-            <div className="flex items-center gap-3 text-sm text-slate-300">
+          <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <div className="flex items-center gap-3 text-sm text-foreground">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               Contacts
             </div>
             <div className="text-right">
-              <div className="text-sm font-semibold text-white">
+              <div className="text-sm font-semibold text-foreground">
                 {focusStats.person}
               </div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-[10px] text-muted-foreground">
                 {visiblePersons} rendered
               </div>
             </div>
@@ -821,18 +821,18 @@ export default function MapComponent() {
       sidebar={sidebar}
       breadcrumb={
         <div className="flex items-center gap-2 text-xs">
-          <span className="font-semibold uppercase tracking-[0.35em] text-slate-500">
+          <span className="font-semibold uppercase tracking-[0.35em] text-muted-foreground">
             Focus
           </span>
           {path.map((p, i) => (
             <React.Fragment key={p.id}>
-              {i > 0 ? <span className="text-slate-600">/</span> : null}
+              {i > 0 ? <span className="text-muted-foreground">/</span> : null}
               <button
                 onClick={() => {
                   setPath((prev) => prev.slice(0, i + 1));
                   setTransform({ x: 0, y: 0, k: 1 });
                 }}
-                className="font-medium text-slate-300 transition hover:text-white"
+                className="font-medium text-foreground transition hover:text-foreground"
               >
                 {p.label}
               </button>
@@ -842,29 +842,29 @@ export default function MapComponent() {
       }
     >
       <div
-        className="relative h-full overflow-hidden bg-slate-950 cursor-grab active:cursor-grabbing"
+        className="relative h-full overflow-hidden bg-background cursor-grab active:cursor-grabbing"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        <div className="absolute right-6 top-6 z-20 flex flex-col gap-2 rounded-2xl border border-white/10 bg-slate-900/90 p-1">
+        <div className="absolute right-6 top-6 z-20 flex flex-col gap-2 rounded-2xl border border-input bg-(--card)/90 p-1">
           <button
             onClick={() => setTransform((p) => ({ ...p, k: p.k * 1.2 }))}
-            className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            className="rounded-xl p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <ZoomIn className="h-4 w-4" />
           </button>
           <button
             onClick={() => setTransform((p) => ({ ...p, k: p.k * 0.8 }))}
-            className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            className="rounded-xl p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <ZoomOut className="h-4 w-4" />
           </button>
           <button
             onClick={() => setTransform({ x: 0, y: 0, k: 1 })}
-            className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            className="rounded-xl p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <Maximize className="h-4 w-4" />
           </button>
@@ -879,7 +879,7 @@ export default function MapComponent() {
                 key={`ring-${r}`}
                 r={r}
                 fill="none"
-                stroke="#ffffff"
+                stroke="var(--border)"
                 strokeOpacity="0.03"
                 strokeWidth="1"
                 strokeDasharray="4 8"
@@ -991,8 +991,8 @@ export default function MapComponent() {
                     x={tx}
                     y={ty}
                     textAnchor={anchor}
-                    fill={node.depth === 0 ? "#fff" : "#cbd5e1"}
-                    className={`text-[11px] select-none transition-colors group-hover:text-white ${node.depth === 0 ? "font-bold tracking-widest text-sm" : "font-medium"}`}
+                    fill="var(--foreground)"
+                    className={`text-[11px] select-none transition-colors group-hover:text-foreground ${node.depth === 0 ? "font-bold tracking-widest text-sm" : "font-medium"}`}
                   >
                     {node.label}
                   </text>
@@ -1002,8 +1002,8 @@ export default function MapComponent() {
                       x={tx}
                       y={subTy}
                       textAnchor={anchor}
-                      fill="#64748b"
-                      className={`text-[9px] select-none transition-colors group-hover:text-slate-300 ${node.depth === 0 ? "tracking-wide" : ""}`}
+                      fill="var(--muted-foreground)"
+                      className={`text-[9px] select-none transition-colors group-hover:text-foreground ${node.depth === 0 ? "tracking-wide" : ""}`}
                     >
                       {node.subLabel}
                     </text>
