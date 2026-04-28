@@ -60,6 +60,12 @@ const parseCSV = (str: string) => {
 
 const safeId = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, "_");
 
+const getBaseRadius = (depth: number) => {
+  if (depth === 0) return 0;
+  if (depth < 3) return depth * RING_RADIUS;
+  return depth * RING_RADIUS * 1.25; // 25% larger for depth 3+ to handle volume
+};
+
 interface MapNode {
   id: string;
   label: string;
@@ -436,21 +442,29 @@ export default function MapComponent() {
 
     const calculatedNodes: LayoutNode[] = [];
     let maximumDepth = 0;
+    let globalStaggerIndex = 0;
 
-    // Pass 3: Calculate Layout using the proportional weights with staggering to prevent overlap
     const calcNodeLayout = (
       id: string,
       startAngle: number,
       endAngle: number,
       depth: number,
-      indexInParent: number = 0,
     ) => {
       maximumDepth = Math.max(maximumDepth, depth);
 
-      // STAGGER RADIUS: To prevent label overlap in dense clusters, we alternate the radius
-      // for sibling nodes. This creates vertical separation between horizontal labels.
-      const staggerOffset = depth > 0 && indexInParent % 2 === 0 ? 40 : 0;
-      const radius = depth === 0 ? 0 : depth * RING_RADIUS + staggerOffset;
+      // Increment a global counter for every placed node to guarantee sequential staggering
+      if (depth > 0) globalStaggerIndex++;
+
+      // STAGGER RADIUS: To prevent label overlap in dense clusters, we distribute the radius
+      // for sibling nodes across multiple levels. Outer clusters get more levels.
+      const staggerLevels = depth >= 3 ? 8 : depth === 2 ? 6 : 4;
+      const staggerStep = depth >= 3 ? 60 : depth === 2 ? 50 : 40;
+
+      // Use the global index to guarantee adjacent angular nodes (regardless of parent)
+      // will be placed on different radius levels
+      const staggerOffset =
+        depth > 0 ? (globalStaggerIndex % staggerLevels) * staggerStep : 0;
+      const radius = depth === 0 ? 0 : getBaseRadius(depth) + staggerOffset;
 
       const angle = depth === 0 ? 0 : startAngle + (endAngle - startAngle) / 2;
       const nodeObj = nodesMap.get(id)!;
@@ -472,7 +486,7 @@ export default function MapComponent() {
         );
         let currentStartAngle = startAngle;
 
-        children.forEach((childId, idx) => {
+        children.forEach((childId) => {
           const childWeight = getWeight(childId);
           const ratio = childWeight / totalWeight; // Dynamic sizing!
           const arcSpread = (endAngle - startAngle) * ratio;
@@ -483,7 +497,7 @@ export default function MapComponent() {
           const childStart = currentStartAngle + padding;
           const childEnd = currentStartAngle + arcSpread - padding;
 
-          calcNodeLayout(childId, childStart, childEnd, depth + 1, idx);
+          calcNodeLayout(childId, childStart, childEnd, depth + 1);
           currentStartAngle += arcSpread; // Advance the pointer
         });
       }
@@ -592,9 +606,8 @@ export default function MapComponent() {
   };
   const handleMouseUp = () => setIsDragging(false);
 
-  const backgroundRings = Array.from(
-    { length: maxDepth },
-    (_, i) => (i + 1) * RING_RADIUS,
+  const backgroundRings = Array.from({ length: maxDepth }, (_, i) =>
+    getBaseRadius(i + 1),
   );
 
   // Layout visible stats for the sidebar
