@@ -534,7 +534,10 @@ const getClientPalette = (colourIndex = 0): BubblePalette => {
   };
 };
 
-const getBudgetPalette = (isOmnicom?: number, colourIndex = 0): BubblePalette => {
+const getBudgetPalette = (
+  isOmnicom?: number,
+  colourIndex = 0,
+): BubblePalette => {
   const colour = isOmnicom
     ? OMNICOM_PURPLES[colourIndex % OMNICOM_PURPLES.length]
     : NON_OMNICOM_COLOURS[colourIndex % NON_OMNICOM_COLOURS.length];
@@ -609,7 +612,9 @@ function buildClientHierarchy(rows: BudgetRow[]): ExplorerNode {
                 amount: row.amount,
                 level: "budget" as const,
                 category,
-                colourIndex: budgetColourIndex.get(`${row.company}|${row.budgetName}`) ?? 0,
+                colourIndex:
+                  budgetColourIndex.get(`${row.company}|${row.budgetName}`) ??
+                  0,
                 omnicomAmount: row.omnicom ? row.amount : 0,
               }))
               .sort((a, b) => b.amount - a.amount),
@@ -617,7 +622,10 @@ function buildClientHierarchy(rows: BudgetRow[]): ExplorerNode {
         })
         .sort((a, b) => b.amount - a.amount);
 
-      const categoryAmount = clients.reduce((sum, client) => sum + client.amount, 0);
+      const categoryAmount = clients.reduce(
+        (sum, client) => sum + client.amount,
+        0,
+      );
       const categoryOmnicomAmount = clients.reduce(
         (sum, client) => sum + (client.omnicomAmount ?? 0),
         0,
@@ -659,11 +667,15 @@ function computeRadii(nodes: ExplorerNode[], containerRadius: number) {
     .sort((a, b) => b.r - a.r);
 }
 
-function lineUpCircles(nodes: ExplorerNode[], containerRadius: number): PackedCircle[] {
+function lineUpCircles(
+  nodes: ExplorerNode[],
+  containerRadius: number,
+): PackedCircle[] {
   const circles = computeRadii(nodes, containerRadius);
   const gap = 24;
   const totalWidth =
-    circles.reduce((sum, circle) => sum + circle.r * 2, 0) + gap * (circles.length - 1);
+    circles.reduce((sum, circle) => sum + circle.r * 2, 0) +
+    gap * (circles.length - 1);
   const maxWidth = containerRadius * 2 - 40;
   const scale = totalWidth > maxWidth ? maxWidth / totalWidth : 1;
 
@@ -687,7 +699,10 @@ function lineUpCircles(nodes: ExplorerNode[], containerRadius: number): PackedCi
   });
 }
 
-function packCircles(nodes: ExplorerNode[], containerRadius: number): PackedCircle[] {
+function packCircles(
+  nodes: ExplorerNode[],
+  containerRadius: number,
+): PackedCircle[] {
   if (nodes.length === 0) return [];
   if (nodes.length <= 4) return lineUpCircles(nodes, containerRadius);
 
@@ -756,7 +771,11 @@ function layoutBudgetCircles(nodes: ExplorerNode[]): PackedCircle[] {
 
   for (let iteration = 0; iteration < 260; iteration += 1) {
     for (let leftIndex = 0; leftIndex < circles.length; leftIndex += 1) {
-      for (let rightIndex = leftIndex + 1; rightIndex < circles.length; rightIndex += 1) {
+      for (
+        let rightIndex = leftIndex + 1;
+        rightIndex < circles.length;
+        rightIndex += 1
+      ) {
         const left = circles[leftIndex];
         const right = circles[rightIndex];
         const dx = right.x - left.x;
@@ -807,7 +826,10 @@ function layoutBudgetCircles(nodes: ExplorerNode[]): PackedCircle[] {
   return circles;
 }
 
-function distributeCalloutYPositions(circles: PackedCircle[], side: "left" | "right") {
+function distributeCalloutYPositions(
+  circles: PackedCircle[],
+  side: "left" | "right",
+) {
   const top = 126;
   const bottom = SVG_SIZE - 126;
   const minGap = 48;
@@ -835,12 +857,16 @@ function distributeCalloutYPositions(circles: PackedCircle[], side: "left" | "ri
         }, []);
 
   for (let index = positions.length - 2; index >= 0; index -= 1) {
-    positions[index] = Math.min(positions[index], positions[index + 1] - minGap);
+    positions[index] = Math.min(
+      positions[index],
+      positions[index + 1] - minGap,
+    );
   }
 
   const overflowTop = top - positions[0];
   const overflowBottom = positions[positions.length - 1] - bottom;
-  const shift = overflowTop > 0 ? overflowTop : overflowBottom > 0 ? -overflowBottom : 0;
+  const shift =
+    overflowTop > 0 ? overflowTop : overflowBottom > 0 ? -overflowBottom : 0;
 
   return sorted.map((circle, index) => ({
     circle,
@@ -851,7 +877,8 @@ function distributeCalloutYPositions(circles: PackedCircle[], side: "left" | "ri
 
 function buildBudgetCallouts(circles: PackedCircle[]): BudgetCallout[] {
   const budgetCircles = circles.filter(
-    (circle) => circle.level === "budget" && circle.r < INLINE_BUDGET_LABEL_MIN_RADIUS,
+    (circle) =>
+      circle.level === "budget" && circle.r < INLINE_BUDGET_LABEL_MIN_RADIUS,
   );
   const left = budgetCircles.filter((circle) => circle.x < 0);
   const right = budgetCircles.filter((circle) => circle.x >= 0);
@@ -882,7 +909,8 @@ function buildBudgetCallouts(circles: PackedCircle[]): BudgetCallout[] {
 
 export default function BudgetExplorer() {
   const [viewMode, setViewMode] = useState<ViewMode>("client");
-  const [interactionMode, setInteractionMode] = useState<InteractionMode>("hand");
+  const [interactionMode, setInteractionMode] =
+    useState<InteractionMode>("hand");
   const [focusId, setFocusId] = useState(ROOT_ID);
   const [searchQuery, setSearchQuery] = useState("");
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
@@ -942,7 +970,8 @@ export default function BudgetExplorer() {
   );
 
   const budgetCallouts = useMemo(
-    () => (focusNode.level === "client" ? buildBudgetCallouts(visibleCircles) : []),
+    () =>
+      focusNode.level === "client" ? buildBudgetCallouts(visibleCircles) : [],
     [focusNode.level, visibleCircles],
   );
 
@@ -953,15 +982,16 @@ export default function BudgetExplorer() {
       totalAmount: focusNode.amount,
       omnicomAmount: focusNode.omnicomAmount ?? 0,
       categoryCount: hierarchy.children?.length ?? 0,
-      clientCount: Array.from(nodesById.values()).filter((node) => node.level === "client").length,
-      budgetCount:
-        focusNode.level === "budget"
-          ? 1
-          : currentChildren.length,
+      clientCount: Array.from(nodesById.values()).filter(
+        (node) => node.level === "client",
+      ).length,
+      budgetCount: focusNode.level === "budget" ? 1 : currentChildren.length,
       share:
         focusNode.amount === 0
           ? 0
-          : Math.round(((focusNode.omnicomAmount ?? 0) / focusNode.amount) * 100),
+          : Math.round(
+              ((focusNode.omnicomAmount ?? 0) / focusNode.amount) * 100,
+            ),
     };
   }, [focusNode, hierarchy.children, nodesById]);
 
@@ -978,7 +1008,10 @@ export default function BudgetExplorer() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
         return;
       }
 
@@ -1018,7 +1051,7 @@ export default function BudgetExplorer() {
     setZoom((value) =>
       Math.max(
         0.8,
-        Math.min(2.5, value * ((event.deltaY > 0) !== reverse ? 0.92 : 1.08)),
+        Math.min(2.5, value * (event.deltaY > 0 !== reverse ? 0.92 : 1.08)),
       ),
     );
   };
@@ -1149,12 +1182,17 @@ export default function BudgetExplorer() {
             <CircleDollarSign className="h-5 w-5" />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-[0.35em] text-muted-foreground">Focus</div>
-            <div className="mt-1 text-lg font-semibold text-foreground">{focusNode.label}</div>
+            <div className="text-xs uppercase tracking-[0.35em] text-muted-foreground">
+              Focus
+            </div>
+            <div className="mt-1 text-lg font-semibold text-foreground">
+              {focusNode.label}
+            </div>
           </div>
         </div>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Start at category level, click through to clients, then drill into budget lines.
+          Start at category level, click through to clients, then drill into
+          budget lines.
         </p>
       </section>
 
@@ -1164,17 +1202,23 @@ export default function BudgetExplorer() {
         </div>
         <div className="space-y-3">
           <div className="rounded-2xl border border-border bg-card p-4">
-            <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Total Budget</div>
+            <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              Total Budget
+            </div>
             <div className="mt-2 text-xl font-semibold text-foreground">
               {formatCurrency(focusStats.totalAmount)}
             </div>
           </div>
           <div className="rounded-2xl border border-border bg-card p-4">
-            <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Omnicom Share</div>
+            <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              Omnicom Share
+            </div>
             <div className="mt-2 text-xl font-semibold text-foreground">
               {formatCurrency(focusStats.omnicomAmount)}
             </div>
-            <div className="mt-1 text-xs text-emerald-500">{focusStats.share}% of visible scope</div>
+            <div className="mt-1 text-xs text-emerald-500">
+              {focusStats.share}% of visible scope
+            </div>
           </div>
         </div>
       </section>
@@ -1186,15 +1230,21 @@ export default function BudgetExplorer() {
         <ul className="space-y-3">
           <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
             <span className="text-sm text-foreground">Categories</span>
-            <span className="text-sm font-semibold text-foreground">{focusStats.categoryCount}</span>
+            <span className="text-sm font-semibold text-foreground">
+              {focusStats.categoryCount}
+            </span>
           </li>
           <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
             <span className="text-sm text-foreground">Clients</span>
-            <span className="text-sm font-semibold text-foreground">{focusStats.clientCount}</span>
+            <span className="text-sm font-semibold text-foreground">
+              {focusStats.clientCount}
+            </span>
           </li>
           <li className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
             <span className="text-sm text-foreground">Visible Children</span>
-            <span className="text-sm font-semibold text-foreground">{focusStats.budgetCount}</span>
+            <span className="text-sm font-semibold text-foreground">
+              {focusStats.budgetCount}
+            </span>
           </li>
         </ul>
       </section>
@@ -1209,10 +1259,14 @@ export default function BudgetExplorer() {
       sidebar={sidebar}
       breadcrumb={
         <div className="flex items-center gap-2 text-xs">
-          <span className="font-semibold uppercase tracking-[0.35em] text-muted-foreground">Focus</span>
+          <span className="font-semibold uppercase tracking-[0.35em] text-muted-foreground">
+            Focus
+          </span>
           {breadcrumb.map((node, index) => (
             <div key={node.id} className="flex items-center gap-2">
-              {index > 0 ? <span className="text-muted-foreground">/</span> : null}
+              {index > 0 ? (
+                <span className="text-muted-foreground">/</span>
+              ) : null}
               <button
                 onClick={() => handleFocusChange(node.id)}
                 className="font-medium text-foreground transition hover:text-foreground"
@@ -1289,18 +1343,20 @@ export default function BudgetExplorer() {
                 : null}
 
               {focusNode.level !== "client" ? (
-              <div className="pointer-events-none absolute left-1/2 top-34 -translate-x-1/2 text-center">
-                <div className="text-base font-semibold tracking-[0.24em] text-foreground">
-                  {focusNode.level === "root" ? "CATEGORIES" : focusNode.label.toUpperCase()}
+                <div className="pointer-events-none absolute left-1/2 top-34 -translate-x-1/2 text-center">
+                  <div className="text-base font-semibold tracking-[0.24em] text-foreground">
+                    {focusNode.level === "root"
+                      ? "CATEGORIES"
+                      : focusNode.label.toUpperCase()}
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    {focusNode.level === "root"
+                      ? "Click a category to see its clients"
+                      : focusNode.level === "category"
+                        ? "Click a client to see budget names"
+                        : "Budget detail"}
+                  </div>
                 </div>
-                <div className="mt-1 text-[11px] text-muted-foreground">
-                  {focusNode.level === "root"
-                    ? "Click a category to see its clients"
-                    : focusNode.level === "category"
-                      ? "Click a client to see budget names"
-                      : "Budget detail"}
-                </div>
-              </div>
               ) : null}
 
               {focusNode.level === "client" ? (
@@ -1343,11 +1399,16 @@ export default function BudgetExplorer() {
                     ? getCategoryPalette(circle.category)
                     : circle.level === "client"
                       ? getClientPalette(circle.colourIndex)
-                      : getBudgetPalette(circle.omnicomAmount, circle.colourIndex);
+                      : getBudgetPalette(
+                          circle.omnicomAmount,
+                          circle.colourIndex,
+                        );
                 const hasInlineBudgetLabel =
-                  circle.level === "budget" && circle.r >= INLINE_BUDGET_LABEL_MIN_RADIUS;
+                  circle.level === "budget" &&
+                  circle.r >= INLINE_BUDGET_LABEL_MIN_RADIUS;
                 const hasInlineBudgetAmount =
-                  circle.level === "budget" && circle.r >= INLINE_BUDGET_AMOUNT_MIN_RADIUS;
+                  circle.level === "budget" &&
+                  circle.r >= INLINE_BUDGET_AMOUNT_MIN_RADIUS;
                 const hasInlineHierarchyLabel =
                   circle.level !== "budget" && circle.r > 42;
 
@@ -1395,7 +1456,7 @@ export default function BudgetExplorer() {
                         <div
                           className="mt-1 font-semibold"
                           style={{
-                            color: palette.stroke,
+                            color: "white",
                             fontSize: circle.r > 118 ? 14 : 12,
                           }}
                         >
@@ -1420,7 +1481,7 @@ export default function BudgetExplorer() {
                         <div
                           className="mt-1 font-semibold"
                           style={{
-                            color: palette.stroke,
+                            color: "white",
                             fontSize: circle.r > 100 ? 14 : 12,
                           }}
                         >
@@ -1429,7 +1490,7 @@ export default function BudgetExplorer() {
                       </div>
                     ) : hasInlineBudgetAmount ? (
                       <div
-                        className="pointer-events-none text-center font-bold text-foreground"
+                        className="pointer-events-none text-center font-bold text-white"
                         style={{
                           fontSize: circle.r > 32 ? 10 : 8,
                           textShadow: "0 2px 10px rgba(2, 6, 23, 0.85)",
@@ -1479,7 +1540,10 @@ export default function BudgetExplorer() {
                       >
                         {callout.circle.label}
                       </div>
-                      <div className="mt-0.5 text-[10px] font-medium" style={{ color: palette.stroke }}>
+                      <div
+                        className="mt-0.5 text-[10px] font-medium"
+                        style={{ color: palette.fill }} // fix
+                      >
                         {formatCompactAmount(callout.circle.amount)}
                       </div>
                     </div>
@@ -1498,7 +1562,8 @@ export default function BudgetExplorer() {
 
         {viewMode === "category" ? (
           <div className="pointer-events-none absolute inset-x-6 bottom-6 z-20 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100 shadow-[0_0_40px_rgba(251,191,36,0.08)]">
-            Category POV is still a placeholder. Client POV now starts from category bubbles and drills into clients, then budgets.
+            Category POV is still a placeholder. Client POV now starts from
+            category bubbles and drills into clients, then budgets.
           </div>
         ) : null}
       </div>

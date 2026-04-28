@@ -129,7 +129,7 @@ export default function MapComponent() {
   const getColor = (c: string) =>
     (
       ({
-        center: "#fff",
+        center: "var(--center-node)", //fix
         executive: "#f59e0b",
         industry: "#3b82f6",
         company: "#8b5cf6",
@@ -139,7 +139,7 @@ export default function MapComponent() {
   const getStroke = (c: string) =>
     (
       ({
-        center: "#374151",
+        center: "var(--center-node)", //fix
         executive: "#b45309",
         industry: "#1e3a8a",
         company: "#4c1d95",
