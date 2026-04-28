@@ -1,5 +1,45 @@
-<!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+# Repository Guidelines
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+## Project Structure & Module Organization
+
+- `app/`: Next.js App Router entrypoints (`layout.tsx`, `page.tsx`), route segments, and global styles in `globals.css`.
+- `components/`: reusable UI and feature modules (notably `BudgetExplorer.tsx`, `MapComponent.tsx`, `ExplorerShell.tsx`).
+- `public/`: static assets served at root paths (`/next.svg`, `/vercel.svg`, etc.).
+- Root config: `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, `postcss.config.mjs`.
+
+## Build, Test, and Development Commands
+
+- `npm run dev`: starts local dev server at `http://localhost:3000`.
+- `npm run build`: creates production build.
+- `npm run start`: serves production build locally.
+- `npm run lint`: runs ESLint checks.
+
+## Coding Style & Naming Conventions
+
+- Language: TypeScript + React function components.
+- Indentation: 2 spaces; keep imports grouped and remove unused symbols.
+- Components: `PascalCase` filenames and exports (example: `MapComponent.tsx`).
+- Route files: Next.js conventions (`page.tsx`, `layout.tsx`).
+- Styling: update `app/globals.css` for shared styles; keep component-local styling close to feature code.
+- Linting: use `eslint` via `npm run lint`; fix warnings before opening a PR.
+
+## Testing Guidelines
+
+- No test framework is configured yet in this repository.
+- Minimum pre-PR quality gate: `npm run lint` and a local smoke test in `npm run dev`.
+- When adding tests, colocate as `*.test.ts(x)` near the module or under a `__tests__/` folder.
+
+## Commit & Pull Request Guidelines
+
+- Commit history favors short, imperative summaries.
+- Prefer format: `<scope>: <imperative summary>` (example: `map: reduce label collisions`).
+- Keep commits focused and atomic; avoid mixing refactors with behavior changes.
+- PRs should include:
+  - Clear problem/solution description.
+  - Linked issue or task ID.
+  - Screenshots/GIFs for UI changes.
+  - Verification steps and commands run.
+
+## Agent-Specific Notes
+
+This project uses Next.js 16. Before changing framework behavior, check docs in `node_modules/next/dist/docs/` and follow current deprecation guidance.
