@@ -17,7 +17,7 @@ export function AnimatedBackground() {
           repeat: Infinity,
           ease: "linear",
         }}
-        className="absolute -top-[20%] -left-[10%] h-[80%] w-[80%] rounded-full bg-primary/20 blur-[120px]"
+        className="absolute top-[-20%] left-[-10%] h-[80%] w-[80%] rounded-full bg-primary/20 blur-[120px]"
       />
       <motion.div
         animate={{
@@ -31,7 +31,7 @@ export function AnimatedBackground() {
           repeat: Infinity,
           ease: "linear",
         }}
-        className="absolute -bottom-[20%] -right-[10%] h-[70%] w-[70%] rounded-full bg-accent/20 blur-[100px]"
+        className="absolute bottom-[-20%] right-[-10%] h-[70%] w-[70%] rounded-full bg-accent/20 blur-[100px]"
       />
     </div>
   );
