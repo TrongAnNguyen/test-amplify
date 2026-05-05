@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Loader2, ShieldCheck, RefreshCw } from "lucide-react";
 
 interface OTPPhaseProps {
@@ -11,9 +11,34 @@ interface OTPPhaseProps {
   error?: string;
 }
 
-export function OTPPhase({ email, onVerify, onResend, isLoading, error }: OTPPhaseProps) {
+export function OTPPhase({
+  email,
+  onVerify,
+  onResend,
+  isLoading,
+  error,
+}: OTPPhaseProps) {
   const [otp, setOtp] = useState<string[]>(new Array(8).fill(""));
+  const [countdown, setCountdown] = useState(30);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const handleResend = async () => {
+    if (countdown > 0 || isLoading) return;
+    try {
+      await onResend();
+      setCountdown(30);
+    } catch (error) {
+      console.error("Failed to resend code:", error);
+    }
+  };
 
   const handleChange = (element: HTMLInputElement, index: number) => {
     if (isNaN(Number(element.value))) return;
@@ -32,7 +57,10 @@ export function OTPPhase({ email, onVerify, onResend, isLoading, error }: OTPPha
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number,
+  ) => {
     if (e.key === "Backspace" && otp[index] === "" && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
@@ -57,7 +85,8 @@ export function OTPPhase({ email, onVerify, onResend, isLoading, error }: OTPPha
           Check your email
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          We&apos;ve sent an 8-digit code to <span className="font-semibold text-foreground">{email}</span>
+          We&apos;ve sent an 8-digit code to{" "}
+          <span className="font-semibold text-foreground">{email}</span>
         </p>
       </div>
 
@@ -67,7 +96,9 @@ export function OTPPhase({ email, onVerify, onResend, isLoading, error }: OTPPha
             key={index}
             type="text"
             maxLength={1}
-            ref={(el) => { inputRefs.current[index] = el; }}
+            ref={(el) => {
+              inputRefs.current[index] = el;
+            }}
             value={data}
             onChange={(e) => handleChange(e.target, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
@@ -77,24 +108,32 @@ export function OTPPhase({ email, onVerify, onResend, isLoading, error }: OTPPha
         ))}
       </div>
 
-      {error && <p className="text-center text-xs font-medium text-destructive">{error}</p>}
+      {error && (
+        <p className="text-center text-xs font-medium text-destructive">
+          {error}
+        </p>
+      )}
 
       <div className="flex flex-col space-y-4">
         <button
           onClick={() => onVerify(otp.join(""))}
           disabled={isLoading || otp.some((v) => v === "")}
-          className="flex w-full items-center justify-center rounded-xl bg-primary py-3 font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
+          className="flex cursor-pointer w-full items-center justify-center rounded-xl bg-primary py-3 font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
         >
-          {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify Code"}
+          {isLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            "Verify Code"
+          )}
         </button>
 
         <button
-          onClick={onResend}
-          disabled={isLoading}
-          className="flex items-center justify-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+          onClick={handleResend}
+          disabled={isLoading || countdown > 0}
+          className="flex cursor-pointer disabled:cursor-not-allowed items-center justify-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
         >
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Resend code
+          <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          {countdown > 0 ? `Resend code in ${countdown}s` : "Resend code"}
         </button>
       </div>
     </div>
