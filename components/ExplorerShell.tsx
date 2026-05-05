@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Moon, Sun } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Moon, Sun, LogOut } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
+import { fetchAuthSession, signOut } from "aws-amplify/auth";
 
 interface ExplorerShellProps {
   pageTitle: string;
@@ -14,15 +15,13 @@ interface ExplorerShellProps {
   children: ReactNode;
 }
 
-const menuItems = [
-  { href: "/", label: "Contact Explorer" },
-  { href: "/budget-explorer", label: "Budget Explorer" },
-];
-
 type ThemeMode = "light" | "dark";
 
 const getSystemTheme = (): ThemeMode =>
-  window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 
 export default function ExplorerShell({
   pageTitle,
@@ -33,14 +32,29 @@ export default function ExplorerShell({
   children,
 }: ExplorerShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<ThemeMode>("light");
+  const [groups, setGroups] = useState<string[]>([]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const savedTheme = window.localStorage.getItem("theme") as ThemeMode | null;
     const initialTheme = savedTheme ?? getSystemTheme();
     setTheme(initialTheme);
+
+    // Fetch user groups for RBAC
+    fetchAuthSession()
+      .then((session) => {
+        console.log("session token: ", session.tokens?.accessToken.payload);
+
+        const cognitoGroups = session.tokens?.accessToken.payload[
+          "cognito:groups"
+        ] as string[] | undefined;
+        setGroups(cognitoGroups || []);
+      })
+      .catch(() => setGroups([]));
   }, []);
 
   useEffect(() => {
@@ -55,6 +69,29 @@ export default function ExplorerShell({
     window.localStorage.setItem("theme", nextTheme);
     document.documentElement.classList.toggle("dark", nextTheme === "dark");
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/login");
+  };
+
+  const menuItems = [
+    {
+      href: "/",
+      label: "Contact Explorer",
+      roles: ["admin", "executive", "user"],
+    },
+    {
+      href: "/budget-explorer",
+      label: "Budget Explorer",
+      roles: ["admin", "executive"],
+    },
+  ].filter((item) => {
+    if (!mounted) return false;
+    // If no groups yet, show nothing or just the basic user features
+    if (groups.length === 0) return item.roles.includes("user");
+    return item.roles.some((role) => groups.includes(role));
+  });
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
@@ -137,6 +174,14 @@ export default function ExplorerShell({
               ) : (
                 <Moon className="h-4 w-4" />
               )}
+            </button>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="inline-flex cursor-pointer h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-input bg-muted px-3 text-foreground transition hover:border-destructive hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </header>

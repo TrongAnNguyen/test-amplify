@@ -12,7 +12,7 @@ interface OTPPhaseProps {
 }
 
 export function OTPPhase({ email, onVerify, onResend, isLoading, error }: OTPPhaseProps) {
-  const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
+  const [otp, setOtp] = useState<string[]>(new Array(8).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = (element: HTMLInputElement, index: number) => {
@@ -23,7 +23,7 @@ export function OTPPhase({ email, onVerify, onResend, isLoading, error }: OTPPha
     setOtp(newOtp);
 
     // Focus next input
-    if (element.value !== "" && index < 5) {
+    if (element.value !== "" && index < 7) {
       inputRefs.current[index + 1]?.focus();
     }
 
@@ -38,6 +38,15 @@ export function OTPPhase({ email, onVerify, onResend, isLoading, error }: OTPPha
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const data = e.clipboardData.getData("text").trim();
+    if (data.length === 8 && !isNaN(Number(data))) {
+      const newOtp = data.split("");
+      setOtp(newOtp);
+      onVerify(data);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -48,7 +57,7 @@ export function OTPPhase({ email, onVerify, onResend, isLoading, error }: OTPPha
           Check your email
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          We've sent a 6-digit code to <span className="font-semibold text-foreground">{email}</span>
+          We&apos;ve sent an 8-digit code to <span className="font-semibold text-foreground">{email}</span>
         </p>
       </div>
 
@@ -62,6 +71,7 @@ export function OTPPhase({ email, onVerify, onResend, isLoading, error }: OTPPha
             value={data}
             onChange={(e) => handleChange(e.target, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
+            onPaste={index === 0 ? handlePaste : undefined}
             className="h-12 w-full rounded-xl border border-border bg-background/50 text-center text-xl font-bold focus:border-primary focus:ring-2 focus:ring-primary/20 outline-hidden"
           />
         ))}

@@ -32,8 +32,9 @@ function LoginContent() {
       });
       setEmail(email);
       setStep("OTP");
-    } catch (err: any) {
-      setError(err.message || "Failed to send code. Please try again.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to send code. Please try again.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -52,8 +53,9 @@ function LoginContent() {
       } else {
         setError("Sign in not complete. Step: " + nextStep.signInStep);
       }
-    } catch (err: any) {
-      setError(err.message || "Invalid code. Please try again.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Invalid code. Please try again.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }
