@@ -7,6 +7,7 @@ interface OTPPhaseProps {
   email: string;
   onVerify: (code: string) => Promise<void>;
   onResend: () => Promise<void>;
+  onBack: () => void;
   isLoading: boolean;
   error?: string;
 }
@@ -15,6 +16,7 @@ export function OTPPhase({
   email,
   onVerify,
   onResend,
+  onBack,
   isLoading,
   error,
 }: OTPPhaseProps) {
@@ -52,7 +54,7 @@ export function OTPPhase({
       inputRefs.current[index + 1]?.focus();
     }
 
-    if (newOtp.every((v) => v !== "")) {
+    if (newOtp.every((v) => v !== "") && !isLoading) {
       onVerify(newOtp.join(""));
     }
   };
@@ -68,7 +70,7 @@ export function OTPPhase({
 
   const handlePaste = (e: React.ClipboardEvent) => {
     const data = e.clipboardData.getData("text").trim();
-    if (data.length === 8 && !isNaN(Number(data))) {
+    if (data.length === 8 && !isNaN(Number(data)) && !isLoading) {
       const newOtp = data.split("");
       setOtp(newOtp);
       onVerify(data);
@@ -84,10 +86,19 @@ export function OTPPhase({
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
           Check your email
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          We&apos;ve sent an 8-digit code to{" "}
-          <span className="font-semibold text-foreground">{email}</span>
-        </p>
+        <div className="mt-2 text-sm text-muted-foreground flex items-center justify-center gap-2">
+          <span>
+            We&apos;ve sent an 8-digit code to{" "}
+            <span className="font-semibold text-foreground">{email}</span>
+          </span>
+          <button
+            onClick={onBack}
+            type="button"
+            className="text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer text-xs"
+          >
+            Change
+          </button>
+        </div>
       </div>
 
       <div className="flex justify-between gap-2">
