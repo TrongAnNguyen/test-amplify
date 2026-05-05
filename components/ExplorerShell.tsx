@@ -47,8 +47,6 @@ export default function ExplorerShell({
     // Fetch user groups for RBAC
     fetchAuthSession()
       .then((session) => {
-        console.log("session token: ", session.tokens?.accessToken.payload);
-
         const cognitoGroups = session.tokens?.accessToken.payload[
           "cognito:groups"
         ] as string[] | undefined;
