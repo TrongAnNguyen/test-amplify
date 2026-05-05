@@ -23,6 +23,21 @@ export function NewPasswordPhase({ onSubmit, isLoading, error }: NewPasswordPhas
       return;
     }
 
+    if (!/[A-Z]/.test(password)) {
+      setValidationError("Password must contain at least one uppercase letter");
+      return;
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      setValidationError("Password must contain at least one special character");
+      return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      setValidationError("Password must contain at least one number");
+      return;
+    }
+
     if (password !== confirmPassword) {
       setValidationError("Passwords do not match");
       return;

@@ -136,6 +136,7 @@ export function LoginClient() {
                 email={email}
                 onVerify={handleVerifyCode}
                 onResend={() => handleLogin(email, "otp")}
+                onBack={() => setStep("LOGIN")}
                 isLoading={isLoading}
                 error={error}
               />
