@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { CircleDollarSign, Maximize, Search, ZoomIn, ZoomOut } from 'lucide-react'
 import ExplorerShell from '@/components/ExplorerShell'
+import { apiClient } from '@/utils/apiClient'
 
 type BudgetRow = {
   category: string
@@ -52,331 +53,6 @@ type BubblePalette = {
   label: string
   meta: string
 }
-
-const BUDGET_DATA: BudgetRow[] = [
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'OMD retainer',
-    amount: 12000000,
-    omnicom: true,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Media billings',
-    amount: 150000000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'AFL Code rights',
-    amount: 7500000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Coates Group Digital Signage',
-    amount: 5000000,
-    omnicom: true,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'LSM',
-    amount: 4600000,
-    omnicom: true,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Unknown',
-    amount: 8920000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Production licensing fees',
-    amount: 1500000,
-    omnicom: true,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Creator',
-    amount: 2500000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Local digital marketing',
-    amount: 3080000,
-    omnicom: true,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Akcelo retainer',
-    amount: 23000000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Global digital marketing',
-    amount: 19000000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'W&K Retainer',
-    amount: 33000000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Digitas Retainer',
-    amount: 650000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Elevent retainer',
-    amount: 1000000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'CYPHA',
-    amount: 300000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'TMS',
-    amount: 500000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'McDonalds',
-    budgetName: 'Tech licenses',
-    amount: 1000000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'KFC',
-    budgetName: 'Ogilvy retainer',
-    amount: 20000000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'KFC',
-    budgetName: 'Media billings',
-    amount: 100000000,
-    omnicom: false,
-  },
-  {
-    category: 'FMCG, Food & Beverage',
-    company: 'KFC',
-    budgetName: 'State of Origin rights',
-    amount: 10000000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'Media Billings (ATL, Google, Social)',
-    amount: 90000000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'Cricket Australia',
-    amount: 6000000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'Accenture Song Retainer',
-    amount: 6000000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'Initiative Retainer',
-    amount: 2800000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'Adobe CDP License',
-    amount: 1200000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'Thinkerbell Retainer',
-    amount: 1000000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'Tech & Ops Fee',
-    amount: 1000000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'IPSOS Measurement fees',
-    amount: 800000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'SA Cricket Oval Naming Rights',
-    amount: 800000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'Adelaide Fringe Presenting Partner',
-    amount: 500000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'Munitex MMM (SA & NSW models)',
-    amount: 500000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'MBCS (Cricket Activation)',
-    amount: 200000,
-    omnicom: false,
-  },
-  {
-    category: 'Banking & Financial Services',
-    company: 'IAG',
-    budgetName: 'Surfing Australia Partnership',
-    amount: 200000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'Media Billings (ATL, Google, Social)',
-    amount: 90000000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'Accenture Song Retainer',
-    amount: 6000000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'Partnerships (Cricket Australia)',
-    amount: 6000000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'Initiative Retainer',
-    amount: 2800000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'Adobe CDP License',
-    amount: 1200000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'Thinkerbell Retainer',
-    amount: 1000000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'Tech & Ops Fee',
-    amount: 1000000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'IPSOS Measurement fees',
-    amount: 800000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'SA Cricket Oval Naming Rights',
-    amount: 800000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'Adelaide Fringe Presenting Partner',
-    amount: 500000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'Munitex MMM (x2 market models SA&NSW)',
-    amount: 500000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'MBCS (Cricket Activation)',
-    amount: 200000,
-    omnicom: false,
-  },
-  {
-    category: 'Travel, Aviation & Leisure',
-    company: 'Virgin',
-    budgetName: 'Surfing Australia Partnership',
-    amount: 200000,
-    omnicom: false,
-  },
-]
 
 const ROOT_ID = 'root'
 const SVG_SIZE = 960
@@ -874,8 +550,36 @@ export default function BudgetExplorer() {
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [isShiftPressed, setIsShiftPressed] = useState(false)
+  const [hierarchy, setHierarchy] = useState<ExplorerNode>(buildClientHierarchy([]))
 
-  const hierarchy = useMemo(() => buildClientHierarchy(BUDGET_DATA), [])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchHierarchy = async () => {
+      try {
+        const { data, errors } = await apiClient.models.Budget.list()
+        if (errors) {
+          console.error('Errors fetching budgets:', errors)
+        }
+        if (data) {
+          const rows: BudgetRow[] = data.map((item) => ({
+            category: item.category ?? 'Uncategorized',
+            company: item.company ?? 'Unknown',
+            budgetName: item.budgetName ?? 'Unnamed Budget',
+            amount: item.amount ?? 0,
+            omnicom: !!item.omnicom,
+          }))
+          setHierarchy(buildClientHierarchy(rows))
+        }
+      } catch (err) {
+        console.error('Error in fetchBudgets:', err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchHierarchy()
+  }, [])
 
   const { nodesById, parentById } = useMemo(() => {
     const nodesMap = new Map<string, ExplorerNode>()
@@ -1252,237 +956,252 @@ export default function BudgetExplorer() {
 
         <div className="absolute inset-0 overflow-hidden">
           <div className="flex h-full w-full items-center justify-center">
-            <div
-              className="relative"
-              style={{
-                width: SVG_SIZE,
-                height: SVG_SIZE,
-                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                transformOrigin: 'center center',
-              }}
-            >
-              {focusNode.level !== 'client'
-                ? [120, 220, 344].map((ring) => (
-                    <div
-                      key={ring}
-                      className="border-input absolute rounded-full border border-dashed"
-                      style={{
-                        width: ring * 2,
-                        height: ring * 2,
-                        left: VIEWPORT_CENTER - ring,
-                        top: VIEWPORT_CENTER - ring,
-                      }}
-                    />
-                  ))
-                : null}
-
-              {focusNode.level !== 'client' ? (
-                <div className="pointer-events-none absolute top-34 left-1/2 -translate-x-1/2 text-center">
-                  <div className="text-foreground text-base font-semibold tracking-[0.24em]">
-                    {focusNode.level === 'root' ? 'CATEGORIES' : focusNode.label.toUpperCase()}
-                  </div>
-                  <div className="text-muted-foreground mt-1 text-[11px]">
-                    {focusNode.level === 'root'
-                      ? 'Click a category to see its clients'
-                      : focusNode.level === 'category'
-                        ? 'Click a client to see budget names'
-                        : 'Budget detail'}
+            {isLoading ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative h-24 w-24">
+                  <div className="absolute inset-0 animate-ping rounded-full bg-blue-500/20" />
+                  <div className="absolute inset-4 animate-pulse rounded-full bg-blue-500/40" />
+                  <div className="flex h-full w-full items-center justify-center">
+                    <CircleDollarSign className="h-8 w-8 animate-bounce text-blue-400" />
                   </div>
                 </div>
-              ) : null}
-
-              {focusNode.level === 'client' ? (
-                <svg
-                  viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`}
-                  className="pointer-events-none absolute inset-0 h-full w-full"
-                >
-                  {budgetCallouts.map((callout) => {
-                    const palette = getBudgetPalette(
-                      callout.circle.omnicomAmount,
-                      callout.circle.colourIndex,
-                    )
-
-                    return (
-                      <g key={`leader-${callout.circle.id}`}>
-                        <path
-                          d={`M ${callout.startX} ${callout.startY} L ${callout.elbowX} ${callout.labelY} L ${callout.labelX + 5} ${callout.labelY}`}
-                          fill="none"
-                          stroke={palette.fill}
-                          strokeOpacity={0.4}
-                          strokeWidth={1}
-                          className="transition-all duration-500 ease-out"
-                        />
-                        <circle
-                          cx={callout.startX}
-                          cy={callout.startY}
-                          r={2.5}
-                          fill={palette.stroke}
-                          opacity={0.75}
-                        />
-                      </g>
-                    )
-                  })}
-                </svg>
-              ) : null}
-
-              {visibleCircles.map((circle) => {
-                const palette =
-                  circle.level === 'category'
-                    ? getCategoryPalette(circle.category)
-                    : circle.level === 'client'
-                      ? getClientPalette(circle.colourIndex)
-                      : getBudgetPalette(circle.omnicomAmount, circle.colourIndex)
-                const hasInlineBudgetLabel =
-                  circle.level === 'budget' && circle.r >= INLINE_BUDGET_LABEL_MIN_RADIUS
-                const hasInlineBudgetAmount =
-                  circle.level === 'budget' && circle.r >= INLINE_BUDGET_AMOUNT_MIN_RADIUS
-                const hasInlineHierarchyLabel = circle.level !== 'budget' && circle.r > 42
-
-                return (
-                  <button
-                    key={circle.id}
-                    type="button"
-                    title={`${circle.label} ${formatCompactAmount(circle.amount)}`}
-                    className="absolute flex items-center justify-center rounded-full transition-transform duration-300 hover:scale-[1.02]"
-                    style={{
-                      width: circle.r * 2,
-                      height: circle.r * 2,
-                      left: VIEWPORT_CENTER + circle.x - circle.r,
-                      top: VIEWPORT_CENTER + circle.y - circle.r,
-                      backgroundColor: palette.fill,
-                      border: `${circle.level === 'budget' ? 5 : 4}px solid ${palette.stroke}`,
-                      cursor: 'default',
-                    }}
-                    onMouseDown={(event) => {
-                      event.stopPropagation()
-                    }}
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      if (viewMode === 'category') return
-                      if (circle.children?.length) {
-                        handleFocusChange(circle.id)
-                      }
-                    }}
+                <div className="text-muted-foreground animate-pulse text-sm font-medium tracking-widest uppercase">
+                  Loading Portfolio...
+                </div>
+              </div>
+            ) : (
+              <div
+                className="relative"
+                style={{
+                  width: SVG_SIZE,
+                  height: SVG_SIZE,
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                  transformOrigin: 'center center',
+                }}
+              >
+                {focusNode.level === 'client' ? (
+                  <svg
+                    viewBox={`0 0 ${SVG_SIZE} ${SVG_SIZE}`}
+                    className="pointer-events-none absolute inset-0 h-full w-full"
                   >
-                    {hasInlineHierarchyLabel ? (
-                      <div
-                        className="pointer-events-none px-5 text-center"
-                        style={{
-                          maxWidth: circle.r * 1.55,
-                          color: '#ffffff',
-                          textShadow: '0 2px 12px rgba(2, 6, 23, 0.72)',
-                        }}
-                      >
-                        <div
-                          className="leading-tight font-extrabold tracking-wide"
-                          style={{ fontSize: circle.r > 118 ? 17 : 13 }}
-                        >
-                          {circle.label}
-                        </div>
-                        <div
-                          className="mt-1 font-semibold"
-                          style={{
-                            color: palette.stroke,
-                            fontSize: circle.r > 118 ? 14 : 12,
-                          }}
-                        >
-                          {formatCompactAmount(circle.amount)}
-                        </div>
-                      </div>
-                    ) : hasInlineBudgetLabel ? (
-                      <div
-                        className="pointer-events-none px-5 text-center"
-                        style={{
-                          maxWidth: circle.r * 1.5,
-                          color: '#ffffff',
-                          textShadow: '0 2px 12px rgba(2, 6, 23, 0.65)',
-                        }}
-                      >
-                        <div
-                          className="leading-tight font-extrabold tracking-wide"
-                          style={{ fontSize: circle.r > 100 ? 16 : 13 }}
-                        >
-                          {circle.label}
-                        </div>
-                        <div
-                          className="mt-1 font-semibold"
-                          style={{
-                            color: palette.stroke,
-                            fontSize: circle.r > 100 ? 14 : 12,
-                          }}
-                        >
-                          {formatCompactAmount(circle.amount)}
-                        </div>
-                      </div>
-                    ) : hasInlineBudgetAmount ? (
-                      <div
-                        className="pointer-events-none text-center font-bold text-white"
-                        style={{
-                          fontSize: circle.r > 32 ? 10 : 8,
-                          textShadow: '0 2px 10px rgba(2, 6, 23, 0.85)',
-                        }}
-                      >
-                        {formatCompactAmount(circle.amount)}
-                      </div>
-                    ) : null}
-                  </button>
-                )
-              })}
+                    {budgetCallouts.map((callout) => {
+                      const palette = getBudgetPalette(
+                        callout.circle.omnicomAmount,
+                        callout.circle.colourIndex,
+                      )
 
-              {budgetCallouts.map((callout) => {
-                const palette = getBudgetPalette(
-                  callout.circle.omnicomAmount,
-                  callout.circle.colourIndex,
-                )
-                const isLeft = callout.side === 'left'
+                      return (
+                        <g key={`leader-${callout.circle.id}`}>
+                          <path
+                            d={`M ${callout.startX} ${callout.startY} L ${callout.elbowX} ${callout.labelY} L ${callout.labelX + 5} ${callout.labelY}`}
+                            fill="none"
+                            stroke={palette.fill}
+                            strokeOpacity={0.4}
+                            strokeWidth={1}
+                            className="transition-all duration-500 ease-out"
+                          />
+                          <circle
+                            cx={callout.startX}
+                            cy={callout.startY}
+                            r={2.5}
+                            fill={palette.stroke}
+                            opacity={0.75}
+                          />
+                        </g>
+                      )
+                    })}
+                  </svg>
+                ) : null}
 
-                return (
-                  <div
-                    key={`callout-${callout.circle.id}`}
-                    className="pointer-events-none absolute flex items-center gap-2"
-                    style={{
-                      left: isLeft ? callout.labelX - 200 : callout.labelX,
-                      top: callout.labelY - 18,
-                      width: 200,
-                      justifyContent: isLeft ? 'flex-end' : 'flex-start',
-                      textAlign: isLeft ? 'right' : 'left',
-                    }}
-                  >
-                    {!isLeft ? (
-                      <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: palette.fill }}
+                {focusNode.level !== 'client'
+                  ? [120, 220, 344].map((ring) => (
+                      <div
+                        key={ring}
+                        className="border-input absolute rounded-full border border-dashed"
+                        style={{
+                          width: ring * 2,
+                          height: ring * 2,
+                          left: VIEWPORT_CENTER - ring,
+                          top: VIEWPORT_CENTER - ring,
+                        }}
                       />
-                    ) : null}
-                    <div className="min-w-0">
-                      <div
-                        className="text-foreground text-[11px] leading-tight font-semibold"
-                        style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {callout.circle.label}
-                      </div>
-                      <div
-                        className="mt-0.5 text-[10px] font-medium"
-                        style={{ color: palette.fill }} // fix
-                      >
-                        {formatCompactAmount(callout.circle.amount)}
-                      </div>
+                    ))
+                  : null}
+
+                {focusNode.level !== 'client' ? (
+                  <div className="pointer-events-none absolute top-34 left-1/2 -translate-x-1/2 text-center">
+                    <div className="text-foreground text-base font-semibold tracking-[0.24em]">
+                      {focusNode.level === 'root' ? 'CATEGORIES' : focusNode.label.toUpperCase()}
                     </div>
-                    {isLeft ? (
-                      <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-full"
-                        style={{ backgroundColor: palette.fill }}
-                      />
-                    ) : null}
+                    <div className="text-muted-foreground mt-1 text-[11px]">
+                      {focusNode.level === 'root'
+                        ? 'Click a category to see its clients'
+                        : focusNode.level === 'category'
+                          ? 'Click a client to see budget names'
+                          : 'Budget detail'}
+                    </div>
                   </div>
-                )
-              })}
-            </div>
+                ) : null}
+
+                {visibleCircles.map((circle) => {
+                  const palette =
+                    circle.level === 'category'
+                      ? getCategoryPalette(circle.category)
+                      : circle.level === 'client'
+                        ? getClientPalette(circle.colourIndex)
+                        : getBudgetPalette(circle.omnicomAmount, circle.colourIndex)
+                  const hasInlineBudgetLabel =
+                    circle.level === 'budget' && circle.r >= INLINE_BUDGET_LABEL_MIN_RADIUS
+                  const hasInlineBudgetAmount =
+                    circle.level === 'budget' && circle.r >= INLINE_BUDGET_AMOUNT_MIN_RADIUS
+                  const hasInlineHierarchyLabel = circle.level !== 'budget' && circle.r > 42
+
+                  return (
+                    <button
+                      key={circle.id}
+                      type="button"
+                      title={`${circle.label} ${formatCompactAmount(circle.amount)}`}
+                      className="absolute flex items-center justify-center rounded-full transition-transform duration-300 hover:scale-[1.02]"
+                      style={{
+                        width: circle.r * 2,
+                        height: circle.r * 2,
+                        left: VIEWPORT_CENTER + circle.x - circle.r,
+                        top: VIEWPORT_CENTER + circle.y - circle.r,
+                        backgroundColor: palette.fill,
+                        border: `${circle.level === 'budget' ? 5 : 4}px solid ${palette.stroke}`,
+                        cursor: 'default',
+                      }}
+                      onMouseDown={(event) => {
+                        event.stopPropagation()
+                      }}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        if (viewMode === 'category') return
+                        if (circle.children?.length) {
+                          handleFocusChange(circle.id)
+                        }
+                      }}
+                    >
+                      {hasInlineHierarchyLabel ? (
+                        <div
+                          className="pointer-events-none px-5 text-center"
+                          style={{
+                            maxWidth: circle.r * 1.55,
+                            color: '#ffffff',
+                            textShadow: '0 2px 12px rgba(2, 6, 23, 0.72)',
+                          }}
+                        >
+                          <div
+                            className="leading-tight font-extrabold tracking-wide"
+                            style={{ fontSize: circle.r > 118 ? 17 : 13 }}
+                          >
+                            {circle.label}
+                          </div>
+                          <div
+                            className="mt-1 font-semibold"
+                            style={{
+                              color: palette.stroke,
+                              fontSize: circle.r > 118 ? 14 : 12,
+                            }}
+                          >
+                            {formatCompactAmount(circle.amount)}
+                          </div>
+                        </div>
+                      ) : hasInlineBudgetLabel ? (
+                        <div
+                          className="pointer-events-none px-5 text-center"
+                          style={{
+                            maxWidth: circle.r * 1.5,
+                            color: '#ffffff',
+                            textShadow: '0 2px 12px rgba(2, 6, 23, 0.65)',
+                          }}
+                        >
+                          <div
+                            className="leading-tight font-extrabold tracking-wide"
+                            style={{ fontSize: circle.r > 100 ? 16 : 13 }}
+                          >
+                            {circle.label}
+                          </div>
+                          <div
+                            className="mt-1 font-semibold"
+                            style={{
+                              color: palette.stroke,
+                              fontSize: circle.r > 100 ? 14 : 12,
+                            }}
+                          >
+                            {formatCompactAmount(circle.amount)}
+                          </div>
+                        </div>
+                      ) : hasInlineBudgetAmount ? (
+                        <div
+                          className="pointer-events-none text-center font-bold text-white"
+                          style={{
+                            fontSize: circle.r > 32 ? 10 : 8,
+                            textShadow: '0 2px 10px rgba(2, 6, 23, 0.85)',
+                          }}
+                        >
+                          {formatCompactAmount(circle.amount)}
+                        </div>
+                      ) : null}
+                    </button>
+                  )
+                })}
+
+                {budgetCallouts.map((callout) => {
+                  const palette = getBudgetPalette(
+                    callout.circle.omnicomAmount,
+                    callout.circle.colourIndex,
+                  )
+                  const isLeft = callout.side === 'left'
+
+                  return (
+                    <div
+                      key={`callout-${callout.circle.id}`}
+                      className="pointer-events-none absolute flex items-center gap-2"
+                      style={{
+                        left: isLeft ? callout.labelX - 200 : callout.labelX,
+                        top: callout.labelY - 18,
+                        width: 200,
+                        justifyContent: isLeft ? 'flex-end' : 'flex-start',
+                        textAlign: isLeft ? 'right' : 'left',
+                      }}
+                    >
+                      {!isLeft ? (
+                        <span
+                          className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: palette.fill }}
+                        />
+                      ) : null}
+                      <div className="min-w-0">
+                        <div
+                          className="text-foreground text-[11px] leading-tight font-semibold"
+                          style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {callout.circle.label}
+                        </div>
+                        <div
+                          className="mt-0.5 text-[10px] font-medium"
+                          style={{ color: palette.fill }} // fix
+                        >
+                          {formatCompactAmount(callout.circle.amount)}
+                        </div>
+                      </div>
+                      {isLeft ? (
+                        <span
+                          className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{ backgroundColor: palette.fill }}
+                        />
+                      ) : null}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
 

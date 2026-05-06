@@ -1,5 +1,11 @@
 import type { AuthSession } from 'aws-amplify/auth'
 
+export enum USER_ROLES {
+  ADMIN = 'admin',
+  EXECUTIVE = 'executive',
+  USER = 'user',
+}
+
 /**
  * Extracts the user's groups (roles) from the AWS Amplify AuthSession.
  * @param session - The AuthSession object returned from fetchAuthSession()
