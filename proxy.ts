@@ -16,6 +16,7 @@ export async function proxy(request: NextRequest) {
 
   const isLoginPage = request.nextUrl.pathname === '/login'
   const isBudgetExplorerPage = request.nextUrl.pathname.startsWith('/budget-explorer')
+  const isAdminPage = request.nextUrl.pathname.startsWith('/admin')
 
   if (authenticated) {
     if (isLoginPage) {
@@ -23,6 +24,12 @@ export async function proxy(request: NextRequest) {
     }
     if (isBudgetExplorerPage) {
       const hasAccess = groups.includes('admin') || groups.includes('executive')
+      if (!hasAccess) {
+        return NextResponse.redirect(new URL('/', request.url))
+      }
+    }
+    if (isAdminPage) {
+      const hasAccess = groups.includes('admin')
       if (!hasAccess) {
         return NextResponse.redirect(new URL('/', request.url))
       }
