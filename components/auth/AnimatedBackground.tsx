@@ -1,10 +1,10 @@
-"use client";
+'use client'
 
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion'
 
 export function AnimatedBackground() {
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden bg-background">
+    <div className="bg-background fixed inset-0 -z-10 overflow-hidden">
       <motion.div
         animate={{
           scale: [1, 1.2, 1],
@@ -15,9 +15,9 @@ export function AnimatedBackground() {
         transition={{
           duration: 20,
           repeat: Infinity,
-          ease: "linear",
+          ease: 'linear',
         }}
-        className="absolute top-[-20%] left-[-10%] h-[80%] w-[80%] rounded-full bg-primary/20 blur-[120px]"
+        className="bg-primary/20 absolute top-[-20%] left-[-10%] h-[80%] w-[80%] rounded-full blur-[120px]"
       />
       <motion.div
         animate={{
@@ -29,10 +29,10 @@ export function AnimatedBackground() {
         transition={{
           duration: 25,
           repeat: Infinity,
-          ease: "linear",
+          ease: 'linear',
         }}
-        className="absolute bottom-[-20%] right-[-10%] h-[70%] w-[70%] rounded-full bg-accent/20 blur-[100px]"
+        className="bg-accent/20 absolute right-[-10%] bottom-[-20%] h-[70%] w-[70%] rounded-full blur-[100px]"
       />
     </div>
-  );
+  )
 }

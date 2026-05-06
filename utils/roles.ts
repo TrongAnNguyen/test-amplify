@@ -1,4 +1,4 @@
-import type { AuthSession } from "aws-amplify/auth";
+import type { AuthSession } from 'aws-amplify/auth'
 
 /**
  * Extracts the user's groups (roles) from the AWS Amplify AuthSession.
@@ -7,9 +7,9 @@ import type { AuthSession } from "aws-amplify/auth";
  */
 export function getUserGroups(session: AuthSession | null | undefined): string[] {
   if (!session?.tokens?.accessToken?.payload) {
-    return [];
+    return []
   }
-  
-  const groups = session.tokens.accessToken.payload["cognito:groups"] as string[] | undefined;
-  return groups || [];
+
+  const groups = session.tokens.accessToken.payload['cognito:groups'] as string[] | undefined
+  return groups || []
 }

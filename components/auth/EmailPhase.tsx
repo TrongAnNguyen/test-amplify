@@ -1,137 +1,119 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Mail, ArrowRight, Loader2, Lock, Key } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from 'react'
+import { Mail, ArrowRight, Loader2, Lock } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { LOCAL_STORAGE_KEY, LOGIN_METHOD } from '@/utils/constants'
 
-export type LoginMethod = "otp" | "password";
+export type LoginMethod = 'otp' | 'password'
 
 interface EmailPhaseProps {
-  onLogin: (
-    email: string,
-    method: LoginMethod,
-    password?: string,
-  ) => Promise<void>;
-  isLoading: boolean;
-  error?: string;
+  onLogin: (email: string, method: LoginMethod, password?: string) => Promise<void>
+  isLoading: boolean
+  error?: string
 }
 
 export function EmailPhase({ onLogin, isLoading, error }: EmailPhaseProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [method, setMethod] = useState<LoginMethod>("otp");
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [method, setMethod] = useState<LoginMethod>('password')
+
+  useEffect(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY.LOGIN_METHOD)
+    if (saved === LOGIN_METHOD.PASSWORDLESS) {
+      setMethod('otp')
+    }
+  }, [])
+
+  const toggleMethod = () => {
+    const newMethod = method === 'otp' ? 'password' : 'otp'
+    setMethod(newMethod)
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (email) {
-      onLogin(email, method, method === "password" ? password : undefined);
+      onLogin(email, method, method === 'password' ? password : undefined)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="text-center">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">
-          Welcome Back
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {method === "otp"
-            ? "Enter your email to receive a secure login code"
-            : "Enter your email and password to sign in"}
+        <h2 className="text-foreground text-3xl font-bold tracking-tight">Welcome Back</h2>
+        <p className="text-muted-foreground mt-2 text-sm">
+          {method === 'otp'
+            ? 'Enter your email to receive a secure login code'
+            : 'Enter your email and password to sign in'}
         </p>
-      </div>
-
-      {/* Toggle */}
-      <div className="flex justify-center">
-        <div className="relative flex w-full max-w-[280px] items-center rounded-full bg-muted/50 p-1 backdrop-blur-sm">
-          <motion.div
-            className="absolute h-[calc(100%-8px)] w-[calc(50%-4px)] rounded-full bg-background shadow-sm"
-            animate={{ x: method === "otp" ? 0 : "100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          />
-          <button
-            type="button"
-            onClick={() => setMethod("otp")}
-            className={`cursor-pointer relative z-10 flex w-1/2 items-center justify-center py-2 text-sm font-medium transition-colors ${
-              method === "otp" ? "text-foreground" : "text-muted-foreground"
-            }`}
-          >
-            <Key className="mr-2 h-4 w-4" />
-            OTP Code
-          </button>
-          <button
-            type="button"
-            onClick={() => setMethod("password")}
-            className={`cursor-pointer relative z-10 flex w-1/2 items-center justify-center py-2 text-sm font-medium transition-colors ${
-              method === "password"
-                ? "text-foreground"
-                : "text-muted-foreground"
-            }`}
-          >
-            <Lock className="mr-2 h-4 w-4" />
-            Password
-          </button>
-        </div>
       </div>
 
       <div className="space-y-4">
         <div className="space-y-2">
           <div className="relative">
-            <Mail className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <Mail className="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
             <input
               type="email"
               placeholder="name@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl border border-border bg-background/50 py-3 pr-4 pl-12 transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 outline-hidden"
+              className="border-border bg-background/50 focus:border-primary focus:ring-primary/20 w-full rounded-xl border py-3 pr-4 pl-12 outline-hidden transition-all focus:ring-2"
             />
           </div>
         </div>
 
         <AnimatePresence mode="popLayout">
-          {method === "password" && (
+          {method === 'password' && (
             <motion.div
               initial={{ opacity: 0, height: 0, y: -10 }}
-              animate={{ opacity: 1, height: "auto", y: 0 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
               exit={{ opacity: 0, height: 0, y: -10 }}
               transition={{ duration: 0.2 }}
               className="space-y-2"
             >
               <div className="relative">
-                <Lock className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                <Lock className="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
                 <input
                   type="password"
                   placeholder="Your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required={method === "password"}
-                  className="w-full rounded-xl border border-border bg-background/50 py-3 pr-4 pl-12 transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 outline-hidden"
+                  required={method === 'password'}
+                  className="border-border bg-background/50 focus:border-primary focus:ring-primary/20 w-full rounded-xl border py-3 pr-4 pl-12 outline-hidden transition-all focus:ring-2"
                 />
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {error && (
-          <p className="text-xs font-medium text-destructive">{error}</p>
-        )}
+        {error && <p className="text-destructive text-xs font-medium">{error}</p>}
       </div>
 
       <button
         type="submit"
-        disabled={isLoading || !email || (method === "password" && !password)}
-        className="group cursor-pointer relative flex w-full items-center justify-center overflow-hidden rounded-xl bg-primary py-3 font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50"
+        disabled={isLoading || !email || (method === 'password' && !password)}
+        className="group bg-primary text-primary-foreground hover:bg-primary/90 relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl py-3 font-semibold transition-all disabled:opacity-50"
       >
         {isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
           <>
-            {method === "otp" ? "Send Login Code" : "Sign In"}
+            {method === 'otp' ? 'Send Login Code' : 'Sign In'}
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </>
         )}
       </button>
+
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={toggleMethod}
+          className="text-muted-foreground hover:text-primary cursor-pointer text-sm font-medium transition-colors"
+        >
+          {method === 'otp' ? 'Login with password' : 'Login with OTP code'}
+        </button>
+      </div>
     </form>
-  );
+  )
 }
