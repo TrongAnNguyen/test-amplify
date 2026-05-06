@@ -2,10 +2,7 @@
 
 import { useState } from 'react'
 import Papa from 'papaparse'
-import { generateClient } from 'aws-amplify/data'
-import type { Schema } from '@/amplify/data/resource'
-
-const client = generateClient<Schema>()
+import { apiClient } from '@/utils/apiClient'
 
 export default function BudgetUploader() {
   const [file, setFile] = useState<File | null>(null)
@@ -47,7 +44,7 @@ export default function BudgetUploader() {
 
           try {
             // Map CSV columns to Schema fields
-            await client.models.Budget.create({
+            await apiClient.models.Budget.create({
               category: String(row.category || ''),
               company: String(row.company || ''),
               budgetName: String(row.budgetName || ''),
