@@ -6,9 +6,9 @@ import { apiClient } from '@/utils/apiClient'
 
 export default function EmployeeUploader() {
   const [file, setFile] = useState<File | null>(null)
-  const [status, setStatus] = useState<'idle' | 'parsing' | 'uploading' | 'success' | 'error' | 'cancelled'>(
-    'idle',
-  )
+  const [status, setStatus] = useState<
+    'idle' | 'parsing' | 'uploading' | 'success' | 'error' | 'cancelled'
+  >('idle')
   const [progress, setProgress] = useState({ current: 0, total: 0, success: 0, failed: 0 })
   const [errorMessage, setErrorMessage] = useState('')
   const [columnMatch, setColumnMatch] = useState<{
@@ -63,35 +63,50 @@ export default function EmployeeUploader() {
 
         const rows = results.data as any[]
         setStatus('uploading')
+
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+
         setProgress((prev) => ({ ...prev, total: rows.length }))
 
         let successCount = 0
         let failedCount = 0
 
-        // Process sequentially to avoid overwhelming the API
-        for (let i = 0; i < rows.length; i++) {
+        const BATCH_SIZE = 3
+        for (let i = 0; i < rows.length; i += BATCH_SIZE) {
           if (isCancelled.current) {
             setStatus('cancelled')
             return
           }
-          const row = rows[i]
-          setProgress((prev) => ({ ...prev, current: i + 1 }))
 
-          try {
-            // Map CSV columns to Employee Schema fields
-            await apiClient.models.Employee.create({
-              primaryContact: String(row.primaryContact || ''),
-              category: String(row.category || ''),
-              companyBrand: String(row.companyBrand || ''),
-              clientName: String(row.clientName || ''),
-              clientTitle: String(row.clientTitle || ''),
-            })
-            successCount++
-          } catch (error) {
-            console.error('Error creating row:', row, error)
-            failedCount++
-          }
-          setProgress((prev) => ({ ...prev, success: successCount, failed: failedCount }))
+          const batch = rows.slice(i, i + BATCH_SIZE)
+
+          await Promise.all(
+            batch.map(async (row) => {
+              if (isCancelled.current) return
+
+              try {
+                // Map CSV columns to Employee Schema fields
+                await apiClient.models.Employee.create({
+                  primaryContact: String(row.primaryContact || ''),
+                  category: String(row.category || ''),
+                  companyBrand: String(row.companyBrand || ''),
+                  clientName: String(row.clientName || ''),
+                  clientTitle: String(row.clientTitle || ''),
+                })
+                successCount++
+              } catch (error) {
+                console.error('Error creating row:', row, error)
+                failedCount++
+              }
+            }),
+          )
+
+          setProgress((prev) => ({
+            ...prev,
+            current: Math.min(i + BATCH_SIZE, rows.length),
+            success: successCount,
+            failed: failedCount,
+          }))
         }
 
         setStatus('success')
