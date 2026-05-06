@@ -71,7 +71,9 @@ export default function EmployeeUploader() {
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-foreground mb-2 block text-sm font-medium">Upload Employee CSV File</label>
+        <label className="text-foreground mb-2 block text-sm font-medium">
+          Upload Employee CSV File
+        </label>
         <p className="text-muted-foreground mb-4 text-xs">
           Expected headers: primaryContact, category, companyBrand, clientName, clientTitle
         </p>
@@ -79,7 +81,7 @@ export default function EmployeeUploader() {
           type="file"
           accept=".csv"
           onChange={handleFileChange}
-          className="text-foreground file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-semibold"
+          className="text-foreground file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 block w-full cursor-pointer text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-semibold"
         />
       </div>
 
