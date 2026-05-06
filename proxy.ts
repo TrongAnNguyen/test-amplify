@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchAuthSession } from "aws-amplify/auth/server";
 import { runWithAmplifyServerContext } from "@/utils/amplify";
+import { getUserGroups } from "@/utils/roles";
 
 export async function proxy(request: NextRequest) {
   const response = NextResponse.next();
@@ -11,12 +12,22 @@ export async function proxy(request: NextRequest) {
   });
 
   const authenticated = !!session.tokens;
+  const groups = getUserGroups(session);
 
   const isLoginPage = request.nextUrl.pathname === "/login";
+  const isBudgetExplorerPage =
+    request.nextUrl.pathname.startsWith("/budget-explorer");
 
   if (authenticated) {
     if (isLoginPage) {
       return NextResponse.redirect(new URL("/", request.url));
+    }
+    if (isBudgetExplorerPage) {
+      const hasAccess =
+        groups.includes("admin") || groups.includes("executive");
+      if (!hasAccess) {
+        return NextResponse.redirect(new URL("/", request.url));
+      }
     }
     return response;
   }

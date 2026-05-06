@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Moon, Sun, LogOut } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { fetchAuthSession, signOut } from "aws-amplify/auth";
+import { getUserGroups } from "@/utils/roles";
 
 interface ExplorerShellProps {
   pageTitle: string;
@@ -47,10 +48,7 @@ export default function ExplorerShell({
     // Fetch user groups for RBAC
     fetchAuthSession()
       .then((session) => {
-        const cognitoGroups = session.tokens?.accessToken.payload[
-          "cognito:groups"
-        ] as string[] | undefined;
-        setGroups(cognitoGroups || []);
+        setGroups(getUserGroups(session));
       })
       .catch(() => setGroups([]));
   }, []);
