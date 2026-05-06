@@ -65,6 +65,7 @@ export function NewPasswordPhase({ onSubmit, isLoading, error }: NewPasswordPhas
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoFocus
               className="border-border bg-background/50 focus:border-primary focus:ring-primary/20 w-full rounded-xl border py-3 pr-4 pl-12 outline-hidden transition-all focus:ring-2"
             />
           </div>
@@ -92,7 +93,7 @@ export function NewPasswordPhase({ onSubmit, isLoading, error }: NewPasswordPhas
       <button
         type="submit"
         disabled={isLoading || !password || !confirmPassword}
-        className="group bg-primary text-primary-foreground hover:bg-primary/90 relative flex w-full items-center justify-center overflow-hidden rounded-xl py-3 font-semibold transition-all disabled:opacity-50"
+        className="group bg-primary text-primary-foreground hover:bg-primary/90 relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl py-3 font-semibold transition-all disabled:opacity-50"
       >
         {isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin" />

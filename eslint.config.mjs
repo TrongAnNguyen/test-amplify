@@ -12,14 +12,13 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
+    'amplify_outputs.json',
   ]),
   {
-    rules: [
-      {
-        '@typescript-eslint/no-explicit-any': 'off',
-        'react-hooks/set-state-in-effect': 'off',
-      },
-    ],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])
 

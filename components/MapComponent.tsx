@@ -262,7 +262,6 @@ export default function MapComponent() {
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setExpandedIds(getInitialExpanded(viewMode, nodesMap))
     setPath([nodesMap.get('omnicom')!])
     setTransform({ x: 0, y: 0, k: 0.8 })

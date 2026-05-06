@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Moon, Sun, LogOut } from 'lucide-react'
+import { Moon, Sun, LogOut, Loader2 } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { fetchAuthSession, signOut } from 'aws-amplify/auth'
 import { getUserGroups } from '@/utils/roles'
@@ -36,9 +36,9 @@ export default function ExplorerShell({
   const [mounted, setMounted] = useState(false)
   const [theme, setTheme] = useState<ThemeMode>('light')
   const [groups, setGroups] = useState<string[]>([])
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
     const savedTheme = window.localStorage.getItem('theme') as ThemeMode | null
     const initialTheme = savedTheme ?? getSystemTheme()
@@ -66,8 +66,15 @@ export default function ExplorerShell({
   }
 
   const handleSignOut = async () => {
-    await signOut()
-    router.push('/login')
+    try {
+      setIsSigningOut(true)
+      await signOut()
+      router.push('/login')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    } finally {
+      setIsSigningOut(false)
+    }
   }
 
   const menuItems = [
@@ -153,10 +160,15 @@ export default function ExplorerShell({
             <button
               type="button"
               onClick={handleSignOut}
-              className="border-input bg-muted text-foreground hover:border-destructive hover:text-destructive focus-visible:ring-ring inline-flex h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 transition focus-visible:ring-2 focus-visible:outline-none"
+              disabled={isSigningOut}
+              className="border-input bg-muted text-foreground hover:border-destructive hover:text-destructive focus-visible:ring-ring inline-flex h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 transition focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
               title="Sign Out"
             >
-              <LogOut className="h-4 w-4" />
+              {isSigningOut ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="h-4 w-4" />
+              )}
             </button>
           </div>
         </header>

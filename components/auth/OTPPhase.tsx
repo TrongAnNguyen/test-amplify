@@ -103,6 +103,7 @@ export function OTPPhase({ email, onVerify, onResend, onBack, isLoading, error }
             onChange={(e) => handleChange(e.target, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             onPaste={index === 0 ? handlePaste : undefined}
+            autoFocus={index === 0}
             className="border-border bg-background/50 focus:border-primary focus:ring-primary/20 h-12 w-full rounded-xl border text-center text-xl font-bold outline-hidden focus:ring-2"
           />
         ))}

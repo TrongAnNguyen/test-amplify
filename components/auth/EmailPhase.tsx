@@ -58,6 +58,7 @@ export function EmailPhase({ onLogin, isLoading, error }: EmailPhaseProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoFocus
               className="border-border bg-background/50 focus:border-primary focus:ring-primary/20 w-full rounded-xl border py-3 pr-4 pl-12 outline-hidden transition-all focus:ring-2"
             />
           </div>
