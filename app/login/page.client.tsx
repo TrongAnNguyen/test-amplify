@@ -44,7 +44,7 @@ export function LoginClient() {
 
       if (nextStep.signInStep === 'DONE') {
         persistPasswordLessLoginMethod()
-        router.push(redirect)
+        router.replace(redirect)
       } else if (nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_EMAIL_CODE') {
         setStep('OTP')
       } else if (
@@ -73,7 +73,7 @@ export function LoginClient() {
 
       if (nextStep.signInStep === 'DONE') {
         persistPasswordLessLoginMethod()
-        router.push(redirect)
+        router.replace(redirect)
       } else {
         setError('Sign in not complete. Step: ' + nextStep.signInStep)
       }
@@ -95,7 +95,7 @@ export function LoginClient() {
 
       if (nextStep.signInStep === 'DONE') {
         persistPasswordLessLoginMethod()
-        router.push(redirect)
+        router.replace(redirect)
       } else {
         setError('Process not complete. Step: ' + nextStep.signInStep)
       }
