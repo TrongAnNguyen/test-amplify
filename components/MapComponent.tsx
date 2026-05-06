@@ -1,55 +1,13 @@
 'use client'
 
 import React, { useState, useMemo, useRef, useEffect } from 'react'
-import { Network, Search, ZoomIn, ZoomOut, Maximize, Upload } from 'lucide-react'
+import { Network, Search, ZoomIn, ZoomOut, Maximize, Loader2 } from 'lucide-react'
 import ExplorerShell from '@/components/ExplorerShell'
+import { apiClient } from '@/utils/apiClient'
+import type { Schema } from '@/amplify/data/resource'
 
 // --- CONFIGURATION ---
 const RING_RADIUS = 280 // Increased to provide more breathing room
-
-const DEFAULT_CSV_PATH = '/data/default-graph-data.csv'
-
-// --- CUSTOM CSV PARSER ---
-const parseCSV = (str: string) => {
-  const result: string[][] = []
-  let row: string[] = [],
-    col = '',
-    inQuotes = false
-  for (let i = 0; i < str.length; i++) {
-    const char = str[i]
-    if (inQuotes) {
-      if (char === '"') {
-        if (str[i + 1] === '"') {
-          col += '"'
-          i++
-        } else {
-          inQuotes = false
-        }
-      } else {
-        col += char
-      }
-    } else {
-      if (char === '"') {
-        inQuotes = true
-      } else if (char === ',') {
-        row.push(col.trim())
-        col = ''
-      } else if (char === '\n') {
-        row.push(col.trim())
-        result.push(row)
-        row = []
-        col = ''
-      } else if (char !== '\r') {
-        col += char
-      }
-    }
-  }
-  if (col !== '' || row.length > 0) {
-    row.push(col.trim())
-    result.push(row)
-  }
-  return result.filter((r) => r.some((c) => c !== ''))
-}
 
 const safeId = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '_')
 
@@ -81,7 +39,9 @@ type LayoutLink = {
 }
 
 export default function MapComponent() {
-  const [csvString, setCsvString] = useState('')
+  const [employeeData, setEmployeeData] = useState<Schema['Employee']['type'][]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'industry' | 'exec'>('industry') // 'industry' or 'exec'
 
   // SVG Pan/Zoom state
@@ -99,23 +59,28 @@ export default function MapComponent() {
   useEffect(() => {
     let isActive = true
 
-    const loadDefaultCsv = async () => {
+    const fetchEmployeeData = async () => {
+      setIsLoading(true)
+      setError(null)
       try {
-        const response = await fetch(DEFAULT_CSV_PATH)
-        if (!response.ok) {
-          throw new Error(`Failed to load CSV: ${response.status} ${response.statusText}`)
+        const { data, errors } = await apiClient.models.Employee.list()
+        if (errors) {
+          throw new Error(errors[0].message)
         }
-
-        const csvText = await response.text()
         if (isActive) {
-          setCsvString(csvText)
+          setEmployeeData(data)
         }
-      } catch (error) {
-        console.error('Unable to load default graph CSV', error)
+      } catch (err) {
+        console.error('Unable to fetch employee data', err)
+        setError(err instanceof Error ? err.message : 'An error occurred while fetching data')
+      } finally {
+        if (isActive) {
+          setIsLoading(false)
+        }
       }
     }
 
-    void loadDefaultCsv()
+    void fetchEmployeeData()
 
     return () => {
       isActive = false
@@ -144,15 +109,8 @@ export default function MapComponent() {
       }) as Record<string, string>
     )[c] || '#374151'
 
-  // 1. Process CSV string into Nodes and Relationship Edges
-  const { nodesMap, edges, execNodes, indNodes, combinedRows } = useMemo(() => {
-    const rawArray = parseCSV(csvString)
-    const dataRows = rawArray.slice(1)
-    const allRows = [...dataRows]
-
-    // Safely filter out any empty or malformed rows from the CSV
-    const validRows = allRows.filter((r) => r.length >= 4 && r[0] && r[1] && r[2] && r[3])
-
+  // 1. Process Employee data into Nodes and Relationship Edges
+  const { nodesMap, edges, execNodes, indNodes, filteredData } = useMemo(() => {
     const nodes = new Map<string, MapNode>()
     nodes.set('omnicom', {
       id: 'omnicom',
@@ -170,18 +128,21 @@ export default function MapComponent() {
     const execs: MapNode[] = [],
       inds: MapNode[] = []
 
-    validRows.forEach((row) => {
-      const exec = row[0],
-        ind = row[1],
-        comp = row[2],
-        person = row[3],
-        role = row[4] || ''
+    const validData = employeeData.filter(
+      (emp) => emp.primaryContact && emp.category && emp.companyBrand && emp.clientName,
+    )
+
+    validData.forEach((emp) => {
+      const exec = emp.primaryContact!
+      const ind = emp.category!
+      const comp = emp.companyBrand!
+      const person = emp.clientName!
+      const role = emp.clientTitle || ''
 
       const execId = `exec_${safeId(exec)}`
       const indId = `ind_${safeId(ind)}`
       const compId = `comp_${safeId(comp)}`
       const personId = `p_${safeId(person)}`
-
       if (!nodes.has(execId)) {
         const n = { id: execId, label: exec, category: 'executive' }
         nodes.set(execId, n)
@@ -215,9 +176,9 @@ export default function MapComponent() {
       edges: rels,
       execNodes: execs,
       indNodes: inds,
-      combinedRows: validRows,
+      filteredData: validData,
     }
-  }, [csvString])
+  }, [employeeData])
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set())
   const [path, setPath] = useState<MapNode[]>([])
@@ -289,18 +250,18 @@ export default function MapComponent() {
 
   // --- CALCULATE TRUE DATA PORTFOLIO FOR FOCUS NODE ---
   const focusStats = useMemo(() => {
-    let matchingRows: string[][] = []
+    let matchingRows: Schema['Employee']['type'][] = []
 
     // If we are at the center, we count everything
     if (!currentRoot || currentRoot.id === 'omnicom') {
-      matchingRows = combinedRows
+      matchingRows = filteredData
     } else {
       // Filter raw dataset based on exactly what is clicked
-      matchingRows = combinedRows.filter((row) => {
-        if (currentRoot.category === 'executive') return row[0] === currentRoot.label
-        if (currentRoot.category === 'industry') return row[1] === currentRoot.label
-        if (currentRoot.category === 'company') return row[2] === currentRoot.label
-        if (currentRoot.category === 'person') return row[3] === currentRoot.label
+      matchingRows = filteredData.filter((emp) => {
+        if (currentRoot.category === 'executive') return emp.primaryContact === currentRoot.label
+        if (currentRoot.category === 'industry') return emp.category === currentRoot.label
+        if (currentRoot.category === 'company') return emp.companyBrand === currentRoot.label
+        if (currentRoot.category === 'person') return emp.clientName === currentRoot.label
         return false
       })
     }
@@ -311,11 +272,11 @@ export default function MapComponent() {
     const persons = new Set()
 
     // Count unique connections within the matched dataset
-    matchingRows.forEach((r) => {
-      execs.add(safeId(r[0]))
-      inds.add(safeId(r[1]))
-      comps.add(safeId(r[2]))
-      persons.add(safeId(r[3]))
+    matchingRows.forEach((emp) => {
+      execs.add(safeId(emp.primaryContact!))
+      inds.add(safeId(emp.category!))
+      comps.add(safeId(emp.companyBrand!))
+      persons.add(safeId(emp.clientName!))
     })
 
     return {
@@ -324,7 +285,7 @@ export default function MapComponent() {
       company: comps.size,
       person: persons.size,
     }
-  }, [currentRoot, combinedRows])
+  }, [currentRoot, filteredData])
 
   // 2. Generate active links based on View Mode
   const activeLinks = useMemo(() => {
@@ -506,13 +467,6 @@ export default function MapComponent() {
   }, [currentRoot, expandedIds, adjList, nodesMap, activeLinks])
 
   // Actions
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (event) => setCsvString(event.target?.result as string)
-    reader.readAsText(file)
-  }
 
   const handleViewChange = (mode: 'industry' | 'exec') => {
     setViewMode(mode)
@@ -607,12 +561,6 @@ export default function MapComponent() {
           Omnicom Leadership POV
         </button>
       </div>
-
-      <label className="border-input bg-muted text-foreground hover:bg-muted hidden cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition md:flex">
-        <Upload className="h-3.5 w-3.5" />
-        Upload CSV
-        <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} />
-      </label>
 
       <div className="relative hidden md:block" ref={searchContainerRef}>
         <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
@@ -792,6 +740,29 @@ export default function MapComponent() {
             <Maximize className="h-4 w-4" />
           </button>
         </div>
+
+        {isLoading ? (
+          <div className="bg-background/60 absolute inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
+            <Loader2 className="text-primary h-10 w-10 animate-spin" />
+            <p className="text-muted-foreground mt-4 animate-pulse text-sm font-medium">
+              Mapping your network...
+            </p>
+          </div>
+        ) : error ? (
+          <div className="bg-background/60 absolute inset-0 z-50 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm">
+            <div className="bg-destructive/10 text-destructive mb-4 rounded-2xl p-4">
+              <Network className="h-8 w-8 opacity-50" />
+            </div>
+            <h3 className="text-foreground mb-2 text-lg font-semibold">Connection Failed</h3>
+            <p className="text-muted-foreground mb-6 max-w-xs text-sm">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-6 py-2 text-sm font-semibold transition"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : null}
 
         <svg className="block h-full w-full" ref={svgRef}>
           <g
