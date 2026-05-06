@@ -1,16 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Papa from 'papaparse'
 import { apiClient } from '@/utils/apiClient'
 
 export default function BudgetUploader() {
   const [file, setFile] = useState<File | null>(null)
-  const [status, setStatus] = useState<'idle' | 'parsing' | 'uploading' | 'success' | 'error'>(
+  const [status, setStatus] = useState<'idle' | 'parsing' | 'uploading' | 'success' | 'error' | 'cancelled'>(
     'idle',
   )
   const [progress, setProgress] = useState({ current: 0, total: 0, success: 0, failed: 0 })
   const [errorMessage, setErrorMessage] = useState('')
+  const [columnMatch, setColumnMatch] = useState<{
+    matched: number
+    total: number
+    missing: string[]
+  } | null>(null)
+  const isCancelled = useRef(false)
+
+  const EXPECTED_HEADERS = ['category', 'company', 'budgetName', 'amount', 'omnicom']
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -18,6 +26,7 @@ export default function BudgetUploader() {
       setStatus('idle')
       setErrorMessage('')
       setProgress({ current: 0, total: 0, success: 0, failed: 0 })
+      setColumnMatch(null)
     }
   }
 
@@ -25,11 +34,27 @@ export default function BudgetUploader() {
     if (!file) return
 
     setStatus('parsing')
+    isCancelled.current = false
 
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
+        if (isCancelled.current) {
+          setStatus('cancelled')
+          return
+        }
+
+        // Check column matches
+        const headers = results.meta.fields || []
+        const matched = EXPECTED_HEADERS.filter((h) => headers.includes(h))
+        const missing = EXPECTED_HEADERS.filter((h) => !headers.includes(h))
+        setColumnMatch({
+          matched: matched.length,
+          total: EXPECTED_HEADERS.length,
+          missing,
+        })
+
         const rows = results.data as any[]
         setStatus('uploading')
         setProgress((prev) => ({ ...prev, total: rows.length }))
@@ -39,6 +64,10 @@ export default function BudgetUploader() {
 
         // Process sequentially to avoid overwhelming the API
         for (let i = 0; i < rows.length; i++) {
+          if (isCancelled.current) {
+            setStatus('cancelled')
+            return
+          }
           const row = rows[i]
           setProgress((prev) => ({ ...prev, current: i + 1 }))
 
@@ -83,19 +112,48 @@ export default function BudgetUploader() {
         />
       </div>
 
-      <button
-        onClick={processUpload}
-        disabled={!file || status === 'parsing' || status === 'uploading'}
-        className="cursor-pointer rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
-      >
-        {status === 'idle' && 'Upload Data'}
-        {status === 'parsing' && 'Parsing CSV...'}
-        {status === 'uploading' && `Uploading... ${progress.current}/${progress.total}`}
-        {status === 'success' && 'Upload Complete'}
-        {status === 'error' && 'Upload Failed'}
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={processUpload}
+          disabled={!file || status === 'parsing' || status === 'uploading'}
+          className="cursor-pointer rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+        >
+          {status === 'idle' && 'Upload Data'}
+          {status === 'parsing' && 'Parsing CSV...'}
+          {status === 'uploading' && `Uploading... ${progress.current}/${progress.total}`}
+          {status === 'success' && 'Upload Complete'}
+          {status === 'error' && 'Upload Failed'}
+          {status === 'cancelled' && 'Upload Cancelled'}
+        </button>
 
-      {(status === 'uploading' || status === 'success') && (
+        {(status === 'parsing' || status === 'uploading') && (
+          <button
+            onClick={() => (isCancelled.current = true)}
+            className="cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+
+      {columnMatch && (
+        <div
+          className={`mt-4 rounded-md p-4 text-sm ${
+            columnMatch.matched === columnMatch.total
+              ? 'bg-green-50 text-green-800'
+              : 'bg-amber-50 text-amber-800'
+          }`}
+        >
+          <p className="font-semibold">
+            Column Match: {columnMatch.matched}/{columnMatch.total} fields found
+          </p>
+          {columnMatch.missing.length > 0 && (
+            <p className="mt-1 text-xs">Missing: {columnMatch.missing.join(', ')}</p>
+          )}
+        </div>
+      )}
+
+      {(status === 'uploading' || status === 'success' || status === 'cancelled') && (
         <div className="bg-muted mt-4 rounded-md p-4 text-sm">
           <p>Status: {status}</p>
           <p>Total rows: {progress.total}</p>
