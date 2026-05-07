@@ -14,35 +14,51 @@ export async function proxy(request: NextRequest) {
   const authenticated = !!session.tokens
   const groups = getUserGroups(session)
 
-  const isLoginPage = request.nextUrl.pathname === '/login'
-  const isBudgetExplorerPage = request.nextUrl.pathname.startsWith('/budget-explorer')
-  const isAdminPage = request.nextUrl.pathname.startsWith('/admin')
+  const pathname = request.nextUrl.pathname
+  const isLoginPage = pathname === '/login'
+  const isSignUpPage = pathname === '/sign-up'
+  const isWelcomePage = pathname === '/welcome'
+  const isAuthPage = isLoginPage || isSignUpPage || isWelcomePage
+
+  const hasAnyRole = groups.some((role) => ['admin', 'executive', 'user'].includes(role))
 
   if (authenticated) {
-    if (isLoginPage) {
+    // 1. Logged in but NO roles -> restricted to /welcome
+    if (!hasAnyRole) {
+      if (isWelcomePage) return response
+      return NextResponse.redirect(new URL('/welcome', request.url))
+    }
+
+    // 2. Logged in and HAS roles -> redirected away from auth pages
+    if (isAuthPage) {
       return NextResponse.redirect(new URL('/', request.url))
     }
-    if (isBudgetExplorerPage) {
+
+    // 3. Feature-specific RBAC
+    if (pathname.startsWith('/budget-explorer')) {
       const hasAccess = groups.includes('admin') || groups.includes('executive')
       if (!hasAccess) {
         return NextResponse.redirect(new URL('/', request.url))
       }
     }
-    if (isAdminPage) {
+
+    if (pathname.startsWith('/admin')) {
       const hasAccess = groups.includes('admin')
       if (!hasAccess) {
         return NextResponse.redirect(new URL('/', request.url))
       }
     }
+
     return response
   }
 
-  if (isLoginPage) {
+  // Not authenticated
+  if (isLoginPage || isSignUpPage) {
     return response
   }
 
   return NextResponse.redirect(
-    new URL(`/login?redirect=${encodeURIComponent(request.nextUrl.pathname)}`, request.url),
+    new URL(`/login?redirect=${encodeURIComponent(pathname)}`, request.url),
   )
 }
 
