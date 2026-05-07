@@ -80,7 +80,7 @@ export default function BudgetUploader() {
 
               try {
                 // Map CSV columns to Schema fields
-                await apiClient.models.Budget.create({
+                const { errors } = await apiClient.models.Budget.create({
                   category: String(row.category || ''),
                   company: String(row.company || ''),
                   budgetName: String(row.budgetName || ''),
@@ -88,10 +88,22 @@ export default function BudgetUploader() {
                   omnicom:
                     String(row.omnicom).toLowerCase() === 'true' || String(row.omnicom) === '1',
                 })
-                successCount++
-              } catch (error) {
+
+                if (errors) {
+                  console.error('Error creating row:', row, errors)
+                  failedCount++
+                  if (failedCount === 1) {
+                    setErrorMessage(errors[0].message)
+                  }
+                } else {
+                  successCount++
+                }
+              } catch (error: any) {
                 console.error('Error creating row:', row, error)
                 failedCount++
+                if (failedCount === 1) {
+                  setErrorMessage(error.message || 'Unknown error')
+                }
               }
             }),
           )
@@ -174,7 +186,12 @@ export default function BudgetUploader() {
           <p>Status: {status}</p>
           <p>Total rows: {progress.total}</p>
           <p className="text-green-600">Successfully created: {progress.success}</p>
-          {progress.failed > 0 && <p className="text-red-600">Failed: {progress.failed}</p>}
+          {progress.failed > 0 && (
+            <div className="mt-2 text-red-600">
+              <p>Failed: {progress.failed}</p>
+              {errorMessage && <p className="mt-1 text-xs italic">Last error: {errorMessage}</p>}
+            </div>
+          )}
         </div>
       )}
 

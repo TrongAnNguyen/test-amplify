@@ -86,17 +86,29 @@ export default function EmployeeUploader() {
 
               try {
                 // Map CSV columns to Employee Schema fields
-                await apiClient.models.Employee.create({
+                const { errors } = await apiClient.models.Employee.create({
                   primaryContact: String(row.primaryContact || ''),
                   category: String(row.category || ''),
                   companyBrand: String(row.companyBrand || ''),
                   clientName: String(row.clientName || ''),
                   clientTitle: String(row.clientTitle || ''),
                 })
-                successCount++
-              } catch (error) {
+
+                if (errors) {
+                  console.error('Error creating row:', row, errors)
+                  failedCount++
+                  if (failedCount === 1) {
+                    setErrorMessage(errors[0].message)
+                  }
+                } else {
+                  successCount++
+                }
+              } catch (error: any) {
                 console.error('Error creating row:', row, error)
                 failedCount++
+                if (failedCount === 1) {
+                  setErrorMessage(error.message || 'Unknown error')
+                }
               }
             }),
           )
@@ -181,7 +193,12 @@ export default function EmployeeUploader() {
           <p>Status: {status}</p>
           <p>Total rows: {progress.total}</p>
           <p className="text-green-600">Successfully created: {progress.success}</p>
-          {progress.failed > 0 && <p className="text-red-600">Failed: {progress.failed}</p>}
+          {progress.failed > 0 && (
+            <div className="mt-2 text-red-600">
+              <p>Failed: {progress.failed}</p>
+              {errorMessage && <p className="mt-1 text-xs italic">Last error: {errorMessage}</p>}
+            </div>
+          )}
         </div>
       )}
 
