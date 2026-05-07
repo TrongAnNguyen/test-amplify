@@ -4,31 +4,27 @@ import { useState } from 'react'
 import { Mail, ArrowRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
-export type LoginMethod = 'otp' | 'password'
-
-interface EmailPhaseProps {
-  onLogin: (email: string, method: LoginMethod, password?: string) => Promise<void>
+interface SignUpPhaseProps {
+  onSignUp: (email: string) => Promise<void>
   isLoading: boolean
   error?: string
 }
 
-export function EmailPhase({ onLogin, isLoading, error }: EmailPhaseProps) {
+export function SignUpPhase({ onSignUp, isLoading, error }: SignUpPhaseProps) {
   const [email, setEmail] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (email) {
-      onLogin(email, 'otp')
+      onSignUp(email)
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="text-center">
-        <h2 className="text-foreground text-3xl font-bold tracking-tight">Welcome Back</h2>
-        <p className="text-muted-foreground mt-2 text-sm">
-          Enter your email to receive a secure login code
-        </p>
+        <h2 className="text-foreground text-3xl font-bold tracking-tight">Create Account</h2>
+        <p className="text-muted-foreground mt-2 text-sm">Enter your email to start your journey</p>
       </div>
 
       <div className="space-y-4">
@@ -46,7 +42,6 @@ export function EmailPhase({ onLogin, isLoading, error }: EmailPhaseProps) {
             />
           </div>
         </div>
-
         {error && <p className="text-destructive text-xs font-medium">{error}</p>}
       </div>
 
@@ -59,7 +54,7 @@ export function EmailPhase({ onLogin, isLoading, error }: EmailPhaseProps) {
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
           <>
-            Send Login Code
+            Create Account
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </>
         )}
@@ -67,10 +62,10 @@ export function EmailPhase({ onLogin, isLoading, error }: EmailPhaseProps) {
 
       <div className="text-center">
         <Link
-          href="/sign-up"
+          href="/login"
           className="text-muted-foreground hover:text-primary cursor-pointer text-sm font-medium transition-colors"
         >
-          Don&apos;t have an account? Create one
+          Already have an account? Sign in
         </Link>
       </div>
     </form>

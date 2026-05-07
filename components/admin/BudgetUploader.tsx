@@ -85,14 +85,15 @@ export default function BudgetUploader() {
                   company: String(row.company || ''),
                   budgetName: String(row.budgetName || ''),
                   amount: parseFloat(row.amount) || 0,
-                  omnicom: String(row.omnicom).toLowerCase() === 'true' || String(row.omnicom) === '1',
+                  omnicom:
+                    String(row.omnicom).toLowerCase() === 'true' || String(row.omnicom) === '1',
                 })
                 successCount++
               } catch (error) {
                 console.error('Error creating row:', row, error)
                 failedCount++
               }
-            })
+            }),
           )
 
           setProgress((prev) => ({
@@ -131,7 +132,7 @@ export default function BudgetUploader() {
         <button
           onClick={processUpload}
           disabled={!file || status === 'parsing' || status === 'uploading'}
-          className="cursor-pointer rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+          className="cursor-pointer rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
         >
           {status === 'idle' && 'Upload Data'}
           {status === 'parsing' && 'Parsing CSV...'}
@@ -144,7 +145,7 @@ export default function BudgetUploader() {
         {(status === 'parsing' || status === 'uploading') && (
           <button
             onClick={() => (isCancelled.current = true)}
-            className="cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className="cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:pointer-events-none"
           >
             Cancel
           </button>

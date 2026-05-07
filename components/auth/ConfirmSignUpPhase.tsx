@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Loader2, ShieldCheck, RefreshCw } from 'lucide-react'
 
-interface OTPPhaseProps {
+interface ConfirmSignUpPhaseProps {
   email: string
   onVerify: (code: string) => Promise<void>
   onResend: () => Promise<void>
@@ -12,8 +12,15 @@ interface OTPPhaseProps {
   error?: string
 }
 
-export function OTPPhase({ email, onVerify, onResend, onBack, isLoading, error }: OTPPhaseProps) {
-  const [otp, setOtp] = useState<string[]>(new Array(8).fill(''))
+export function ConfirmSignUpPhase({
+  email,
+  onVerify,
+  onResend,
+  onBack,
+  isLoading,
+  error,
+}: ConfirmSignUpPhaseProps) {
+  const [otp, setOtp] = useState<string[]>(new Array(6).fill(''))
   const [countdown, setCountdown] = useState(30)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -44,7 +51,7 @@ export function OTPPhase({ email, onVerify, onResend, onBack, isLoading, error }
     setOtp(newOtp)
 
     // Focus next input
-    if (element.value !== '' && index < 7) {
+    if (element.value !== '' && index < 5) {
       inputRefs.current[index + 1]?.focus()
     }
 
@@ -61,7 +68,7 @@ export function OTPPhase({ email, onVerify, onResend, onBack, isLoading, error }
 
   const handlePaste = (e: React.ClipboardEvent) => {
     const data = e.clipboardData.getData('text').trim()
-    if (data.length === 8 && !isNaN(Number(data)) && !isLoading) {
+    if (data.length === 6 && !isNaN(Number(data)) && !isLoading) {
       const newOtp = data.split('')
       setOtp(newOtp)
       onVerify(data)
@@ -74,10 +81,10 @@ export function OTPPhase({ email, onVerify, onResend, onBack, isLoading, error }
         <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
           <ShieldCheck className="text-primary h-6 w-6" />
         </div>
-        <h2 className="text-foreground text-2xl font-bold tracking-tight">Check your email</h2>
+        <h2 className="text-foreground text-2xl font-bold tracking-tight">Confirm Your Email</h2>
         <div className="text-muted-foreground mt-2 flex items-center justify-center gap-2 text-sm">
           <span>
-            We&apos;ve sent an 8-digit code to{' '}
+            We&apos;ve sent a 6-digit confirmation code to{' '}
             <span className="text-foreground font-semibold">{email}</span>
           </span>
           <button
@@ -117,7 +124,7 @@ export function OTPPhase({ email, onVerify, onResend, onBack, isLoading, error }
           disabled={isLoading || otp.some((v) => v === '')}
           className="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full cursor-pointer items-center justify-center rounded-xl py-3 font-semibold transition-all disabled:pointer-events-none disabled:opacity-50"
         >
-          {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Verify Code'}
+          {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Confirm Account'}
         </button>
 
         <button
