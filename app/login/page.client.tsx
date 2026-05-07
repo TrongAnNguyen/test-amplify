@@ -8,7 +8,6 @@ import { AuthCard } from '@/components/auth/AuthCard'
 import { EmailPhase } from '@/components/auth/EmailPhase'
 import { OTPPhase } from '@/components/auth/OTPPhase'
 import { AnimatePresence, motion } from 'framer-motion'
-import { LOCAL_STORAGE_KEY, LOGIN_METHOD } from '@/utils/constants'
 
 export function LoginClient() {
   const router = useRouter()
@@ -19,10 +18,6 @@ export function LoginClient() {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>()
-
-  const persistPasswordLessLoginMethod = () => {
-    localStorage.setItem(LOCAL_STORAGE_KEY.LOGIN_METHOD, LOGIN_METHOD.PASSWORDLESS)
-  }
 
   const handleLogin = async (emailValue: string) => {
     setIsLoading(true)
@@ -38,7 +33,6 @@ export function LoginClient() {
       })
 
       if (nextStep.signInStep === 'DONE') {
-        persistPasswordLessLoginMethod()
         router.replace(redirect)
       } else if (nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_EMAIL_CODE') {
         setStep('OTP')
@@ -62,7 +56,6 @@ export function LoginClient() {
       })
 
       if (nextStep.signInStep === 'DONE') {
-        persistPasswordLessLoginMethod()
         router.replace(redirect)
       } else {
         setError('Sign in not complete. Step: ' + nextStep.signInStep)

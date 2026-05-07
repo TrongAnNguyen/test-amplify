@@ -93,7 +93,7 @@ export function NewPasswordPhase({ onSubmit, isLoading, error }: NewPasswordPhas
       <button
         type="submit"
         disabled={isLoading || !password || !confirmPassword}
-        className="group bg-primary text-primary-foreground hover:bg-primary/90 relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl py-3 font-semibold transition-all disabled:opacity-50"
+        className="group bg-primary text-primary-foreground hover:bg-primary/90 relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl py-3 font-semibold transition-all disabled:pointer-events-none disabled:opacity-50"
       >
         {isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin" />

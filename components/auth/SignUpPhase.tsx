@@ -24,9 +24,7 @@ export function SignUpPhase({ onSignUp, isLoading, error }: SignUpPhaseProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="text-center">
         <h2 className="text-foreground text-3xl font-bold tracking-tight">Create Account</h2>
-        <p className="text-muted-foreground mt-2 text-sm">
-          Enter your email to start your journey
-        </p>
+        <p className="text-muted-foreground mt-2 text-sm">Enter your email to start your journey</p>
       </div>
 
       <div className="space-y-4">
@@ -50,7 +48,7 @@ export function SignUpPhase({ onSignUp, isLoading, error }: SignUpPhaseProps) {
       <button
         type="submit"
         disabled={isLoading || !email}
-        className="group bg-primary text-primary-foreground hover:bg-primary/90 relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl py-3 font-semibold transition-all disabled:opacity-50"
+        className="group bg-primary text-primary-foreground hover:bg-primary/90 relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl py-3 font-semibold transition-all disabled:pointer-events-none disabled:opacity-50"
       >
         {isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin" />

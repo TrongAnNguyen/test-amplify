@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signUp, confirmSignUp } from 'aws-amplify/auth'
+import { signUp, confirmSignUp, autoSignIn } from 'aws-amplify/auth'
 import { AnimatedBackground } from '@/components/auth/AnimatedBackground'
 import { AuthCard } from '@/components/auth/AuthCard'
 import { SignUpPhase } from '@/components/auth/SignUpPhase'
@@ -27,11 +27,14 @@ export function SignUpClient() {
           userAttributes: {
             email: emailValue,
           },
+          autoSignIn: {
+            authFlowType: 'USER_AUTH',
+          },
         },
       })
 
       if (nextStep.signUpStep === 'DONE') {
-        router.push('/welcome')
+        router.replace('/welcome')
       } else if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
         setStep('CONFIRM')
       } else {
@@ -55,9 +58,17 @@ export function SignUpClient() {
       })
 
       if (nextStep.signUpStep === 'DONE') {
-        router.push('/welcome')
+        router.replace('/welcome')
+      } else if (nextStep.signUpStep === 'COMPLETE_AUTO_SIGN_IN') {
+        const { nextStep } = await autoSignIn()
+
+        if (nextStep.signInStep === 'DONE') {
+          router.replace('/welcome')
+        } else {
+          throw new Error('Something went wrong. Please try again.')
+        }
       } else {
-        setError('Signup not complete. Step: ' + nextStep.signUpStep)
+        throw new Error('Something went wrong. Please try again.')
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Invalid code. Please try again.'

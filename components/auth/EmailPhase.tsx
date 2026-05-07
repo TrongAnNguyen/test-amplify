@@ -1,10 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Mail, ArrowRight, Loader2 } from 'lucide-react'
-import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { LOCAL_STORAGE_KEY, LOGIN_METHOD } from '@/utils/constants'
 
 export type LoginMethod = 'otp' | 'password'
 
@@ -16,10 +14,6 @@ interface EmailPhaseProps {
 
 export function EmailPhase({ onLogin, isLoading, error }: EmailPhaseProps) {
   const [email, setEmail] = useState('')
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY.LOGIN_METHOD, LOGIN_METHOD.PASSWORDLESS)
-  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,7 +53,7 @@ export function EmailPhase({ onLogin, isLoading, error }: EmailPhaseProps) {
       <button
         type="submit"
         disabled={isLoading || !email}
-        className="group bg-primary text-primary-foreground hover:bg-primary/90 relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl py-3 font-semibold transition-all disabled:opacity-50"
+        className="group bg-primary text-primary-foreground hover:bg-primary/90 relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl py-3 font-semibold transition-all disabled:pointer-events-none disabled:opacity-50"
       >
         {isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin" />
@@ -76,7 +70,7 @@ export function EmailPhase({ onLogin, isLoading, error }: EmailPhaseProps) {
           href="/sign-up"
           className="text-muted-foreground hover:text-primary cursor-pointer text-sm font-medium transition-colors"
         >
-          Don't have an account? Create one
+          Don&apos;t have an account? Create one
         </Link>
       </div>
     </form>

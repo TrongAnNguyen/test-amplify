@@ -139,7 +139,7 @@ export default function EmployeeUploader() {
         <button
           onClick={processUpload}
           disabled={!file || status === 'parsing' || status === 'uploading'}
-          className="cursor-pointer rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+          className="cursor-pointer rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
         >
           {status === 'idle' && 'Upload Data'}
           {status === 'parsing' && 'Parsing CSV...'}
@@ -152,7 +152,7 @@ export default function EmployeeUploader() {
         {(status === 'parsing' || status === 'uploading') && (
           <button
             onClick={() => (isCancelled.current = true)}
-            className="cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className="cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:pointer-events-none"
           >
             Cancel
           </button>

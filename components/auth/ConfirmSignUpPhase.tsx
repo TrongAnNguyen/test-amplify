@@ -122,7 +122,7 @@ export function ConfirmSignUpPhase({
         <button
           onClick={() => onVerify(otp.join(''))}
           disabled={isLoading || otp.some((v) => v === '')}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full cursor-pointer items-center justify-center rounded-xl py-3 font-semibold transition-all disabled:opacity-50"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full cursor-pointer items-center justify-center rounded-xl py-3 font-semibold transition-all disabled:pointer-events-none disabled:opacity-50"
         >
           {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Confirm Account'}
         </button>
@@ -130,7 +130,7 @@ export function ConfirmSignUpPhase({
         <button
           onClick={handleResend}
           disabled={isLoading || countdown > 0}
-          className="text-muted-foreground hover:text-primary flex cursor-pointer items-center justify-center text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className="text-muted-foreground hover:text-primary flex cursor-pointer items-center justify-center text-sm font-medium transition-colors disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
         >
           <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           {countdown > 0 ? `Resend code in ${countdown}s` : 'Resend code'}
