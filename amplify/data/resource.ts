@@ -9,7 +9,7 @@ const schema = a.schema({
       amount: a.float(),
       omnicom: a.boolean(),
     })
-    .authorization((allow) => [allow.group('admin'), allow.group('executive')]),
+    .authorization((allow) => [allow.group('admin'), allow.group('executive').to(['read'])]),
   Employee: a
     .model({
       primaryContact: a.string(),
@@ -20,8 +20,8 @@ const schema = a.schema({
     })
     .authorization((allow) => [
       allow.group('admin'),
-      allow.group('executive'),
-      allow.group('user'),
+      allow.group('executive').to(['read']),
+      allow.group('user').to(['read']),
     ]),
 })
 
