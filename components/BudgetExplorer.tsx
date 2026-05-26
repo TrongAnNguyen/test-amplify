@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { CircleDollarSign, Maximize, Search, ZoomIn, ZoomOut } from 'lucide-react'
 import ExplorerShell from '@/components/ExplorerShell'
 import { apiClient } from '@/utils/apiClient'
+import { useQuery } from '@tanstack/react-query'
+import { fetchAllPages } from '@/utils/amplifyFetch'
+import type { Schema } from '@/amplify/data/resource'
 
 type BudgetRow = {
   category: string
@@ -540,6 +543,8 @@ function buildBudgetCallouts(circles: PackedCircle[]): BudgetCallout[] {
   })
 }
 
+const DEFAULT_BUDGET_DATA: Schema['Budget']['type'][] = []
+
 export default function BudgetExplorer() {
   const [viewMode, setViewMode] = useState<ViewMode>('client')
   const [interactionMode, setInteractionMode] = useState<InteractionMode>('hand')
@@ -550,36 +555,23 @@ export default function BudgetExplorer() {
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [isShiftPressed, setIsShiftPressed] = useState(false)
-  const [hierarchy, setHierarchy] = useState<ExplorerNode>(buildClientHierarchy([]))
+  const { data, isLoading } = useQuery({
+    queryKey: ['budgets'],
+    queryFn: () =>
+      fetchAllPages((nextToken) => apiClient.models.Budget.list({ nextToken, limit: 2000 })),
+  })
+  const budgetData = data || DEFAULT_BUDGET_DATA
 
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchHierarchy = async () => {
-      try {
-        const { data, errors } = await apiClient.models.Budget.list()
-        if (errors) {
-          console.error('Errors fetching budgets:', errors)
-        }
-        if (data) {
-          const rows: BudgetRow[] = data.map((item) => ({
-            category: item.category ?? 'Uncategorized',
-            company: item.company ?? 'Unknown',
-            budgetName: item.budgetName ?? 'Unnamed Budget',
-            amount: item.amount ?? 0,
-            omnicom: !!item.omnicom,
-          }))
-          setHierarchy(buildClientHierarchy(rows))
-        }
-      } catch (err) {
-        console.error('Error in fetchBudgets:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchHierarchy()
-  }, [])
+  const hierarchy = useMemo(() => {
+    const rows: BudgetRow[] = budgetData.map((item) => ({
+      category: item.category ?? 'Uncategorized',
+      company: item.company ?? 'Unknown',
+      budgetName: item.budgetName ?? 'Unnamed Budget',
+      amount: item.amount ?? 0,
+      omnicom: !!item.omnicom,
+    }))
+    return buildClientHierarchy(rows)
+  }, [budgetData])
 
   const { nodesById, parentById } = useMemo(() => {
     const nodesMap = new Map<string, ExplorerNode>()

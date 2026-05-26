@@ -5,6 +5,8 @@ import { Network, Search, ZoomIn, ZoomOut, Maximize, Loader2 } from 'lucide-reac
 import ExplorerShell from '@/components/ExplorerShell'
 import { apiClient } from '@/utils/apiClient'
 import type { Schema } from '@/amplify/data/resource'
+import { useQuery } from '@tanstack/react-query'
+import { fetchAllPages } from '@/utils/amplifyFetch'
 
 // --- CONFIGURATION ---
 const RING_RADIUS = 280 // Increased to provide more breathing room
@@ -38,10 +40,15 @@ type LayoutLink = {
   target: Pick<LayoutNode, 'x' | 'y' | 'category' | 'id'>
 }
 
+const DEFAULT_EMPLOYEE_DATA: Schema['Employee']['type'][] = []
+
 export default function MapComponent() {
-  const [employeeData, setEmployeeData] = useState<Schema['Employee']['type'][]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['employees'],
+    queryFn: () =>
+      fetchAllPages((nextToken) => apiClient.models.Employee.list({ nextToken, limit: 3000 })),
+  })
+  const employeeData = data || DEFAULT_EMPLOYEE_DATA
   const [viewMode, setViewMode] = useState<'industry' | 'exec'>('industry') // 'industry' or 'exec'
 
   // SVG Pan/Zoom state
@@ -55,37 +62,6 @@ export default function MapComponent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchDropdown, setShowSearchDropdown] = useState(false)
   const searchContainerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    let isActive = true
-
-    const fetchEmployeeData = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const { data, errors } = await apiClient.models.Employee.list()
-        if (errors) {
-          throw new Error(errors[0].message)
-        }
-        if (isActive) {
-          setEmployeeData(data)
-        }
-      } catch (err) {
-        console.error('Unable to fetch employee data', err)
-        setError(err instanceof Error ? err.message : 'An error occurred while fetching data')
-      } finally {
-        if (isActive) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    void fetchEmployeeData()
-
-    return () => {
-      isActive = false
-    }
-  }, [])
 
   // Styling helpers
   const getColor = (c: string) =>
@@ -754,7 +730,7 @@ export default function MapComponent() {
               <Network className="h-8 w-8 opacity-50" />
             </div>
             <h3 className="text-foreground mb-2 text-lg font-semibold">Connection Failed</h3>
-            <p className="text-muted-foreground mb-6 max-w-xs text-sm">{error}</p>
+            <p className="text-muted-foreground mb-6 max-w-xs text-sm">{error.message}</p>
             <button
               onClick={() => window.location.reload()}
               className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl px-6 py-2 text-sm font-semibold transition"
