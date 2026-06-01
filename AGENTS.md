@@ -9,10 +9,10 @@
 
 ## Build, Test, and Development Commands
 
-- `npm run dev`: starts local dev server at `http://localhost:3000`.
-- `npm run build`: creates production build.
-- `npm run start`: serves production build locally.
-- `npm run lint`: runs ESLint checks.
+- `yarn dev`: starts local dev server at `http://localhost:3000`.
+- `yarn build`: creates production build.
+- `yarn start`: serves production build locally.
+- `yarn lint`: runs ESLint checks.
 
 ## Coding Style & Naming Conventions
 
@@ -24,12 +24,12 @@
 - Tailwind classnames: write mobile-first utilities and add responsive variants (`sm:`, `md:`, `lg:`) progressively.
 - Tailwind classnames: prefer semantic tokens and scale utilities (`bg-background`, `text-foreground`, spacing/size scale) over raw values.
 - Tailwind classnames: use arbitrary values only when no token or standard utility can express the style.
-- Linting: use `eslint` via `npm run lint`; fix warnings before opening a PR.
+- Linting: use `eslint` via `yarn lint`; fix warnings before opening a PR.
 
 ## Testing Guidelines
 
 - No test framework is configured yet in this repository.
-- Minimum pre-PR quality gate: `npm run lint` and a local smoke test in `npm run dev`.
+- Minimum pre-PR quality gate: `yarn lint` and a local smoke test in `yarn dev`.
 - When adding tests, colocate as `*.test.ts(x)` near the module or under a `__tests__/` folder.
 
 ## Commit & Pull Request Guidelines

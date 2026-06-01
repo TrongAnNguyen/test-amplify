@@ -984,9 +984,6 @@ export default function MapComponent() {
           onRenderFramePre={handleRenderFramePre}
           onNodeClick={(node) => {
             handleNodeClick(node as any)
-            if (fgRef.current) {
-              fgRef.current.centerAt(node.x ?? 0, node.y ?? 0, 400)
-            }
           }}
           onNodeRightClick={(node) => {
             const category = (node as any).category
