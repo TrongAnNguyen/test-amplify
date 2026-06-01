@@ -969,6 +969,16 @@ export default function MapComponent() {
           nodeLabel="label"
           nodeCanvasObject={handleNodeCanvasObject}
           nodeCanvasObjectMode={() => 'replace'}
+          nodePointerAreaPaint={(node, color, ctx) => {
+            const isCenter = (node as any).depth === 0
+            const radius = isCenter ? 24 : 18
+            ctx.save()
+            ctx.fillStyle = color
+            ctx.beginPath()
+            ctx.arc(node.x ?? 0, node.y ?? 0, radius, 0, 2 * Math.PI)
+            ctx.fill()
+            ctx.restore()
+          }}
           linkCanvasObject={handleLinkCanvasObject}
           linkCanvasObjectMode={() => 'replace'}
           onRenderFramePre={handleRenderFramePre}
