@@ -65,7 +65,7 @@ export default function BudgetUploader() {
         let successCount = 0
         let failedCount = 0
 
-        const BATCH_SIZE = 3
+        const BATCH_SIZE = 10
         for (let i = 0; i < rows.length; i += BATCH_SIZE) {
           if (isCancelled.current) {
             setStatus('cancelled')

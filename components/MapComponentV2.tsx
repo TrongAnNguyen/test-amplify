@@ -17,7 +17,7 @@ const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false 
 const safeId = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '_')
 
 const getBaseRadius = (depth: number) => {
-  const LEVEL_RADII = [0, 200, 760, 1300]
+  const LEVEL_RADII = [0, 200, 1200, 2300]
   if (depth < 0) return 0
   if (depth < LEVEL_RADII.length) return LEVEL_RADII[depth]
   return LEVEL_RADII[LEVEL_RADII.length - 1] + (depth - LEVEL_RADII.length + 1) * 460
