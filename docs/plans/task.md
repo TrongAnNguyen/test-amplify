@@ -7,4 +7,10 @@
 | Propose 2-3 approaches | Done | Recommended Approach B (progressive spacing), approved by user |
 | Present design | Done | Design presented and approved by user |
 | Write design doc | Done | Created docs/plans/2026-06-01-node-path-length-design.md |
-| Transition to implementation | In Progress | Ready to transition and create implementation plan |
+| Transition to implementation | Done | Created docs/plans/2026-06-01-node-path-lengths-implementation.md |
+
+## Implementation Tasks
+
+| Task | Status | Details |
+|------|--------|---------|
+| Update Node Level Radii Spacing | Pending | Modify getBaseRadius helper and run verification checks |
