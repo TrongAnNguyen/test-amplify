@@ -455,13 +455,16 @@ export default function MapComponent() {
   }, [currentRoot, expandedIds, adjList, nodesMap, activeLinks])
 
   const forceGraphData = useMemo(() => {
+    const nodeIds = new Set(layoutNodes.map((n) => n.id))
     return {
       nodes: layoutNodes,
-      links: activeLinks.map((link) => ({
-        ...link,
-        source: link.source,
-        target: link.target,
-      })),
+      links: activeLinks
+        .filter((link) => nodeIds.has(link.source) && nodeIds.has(link.target))
+        .map((link) => ({
+          ...link,
+          source: link.source,
+          target: link.target,
+        })),
     }
   }, [layoutNodes, activeLinks])
 
