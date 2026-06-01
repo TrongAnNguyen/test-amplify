@@ -13,14 +13,14 @@ import * as d3 from 'd3-force'
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false })
 
 // --- CONFIGURATION ---
-const RING_RADIUS = 280 // Increased to provide more breathing room
 
 const safeId = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '_')
 
 const getBaseRadius = (depth: number) => {
-  if (depth === 0) return 0
-  if (depth < 3) return depth * RING_RADIUS
-  return depth * RING_RADIUS * 1.25 // 25% larger for depth 3+ to handle volume
+  const LEVEL_RADII = [0, 340, 720, 1180]
+  if (depth < 0) return 0
+  if (depth < LEVEL_RADII.length) return LEVEL_RADII[depth]
+  return LEVEL_RADII[LEVEL_RADII.length - 1] + (depth - LEVEL_RADII.length + 1) * 460
 }
 
 interface MapNode {
