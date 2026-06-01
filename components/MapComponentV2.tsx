@@ -17,7 +17,7 @@ const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false 
 const safeId = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '_')
 
 const getBaseRadius = (depth: number) => {
-  const LEVEL_RADII = [0, 340, 720, 1180]
+  const LEVEL_RADII = [0, 200, 760, 1300]
   if (depth < 0) return 0
   if (depth < LEVEL_RADII.length) return LEVEL_RADII[depth]
   return LEVEL_RADII[LEVEL_RADII.length - 1] + (depth - LEVEL_RADII.length + 1) * 460
@@ -598,7 +598,10 @@ export default function MapComponent() {
         isNodeHighlighted = forceGraphData.links.some((link: any) => {
           const sId = typeof link.source === 'object' ? link.source.id : link.source
           const tId = typeof link.target === 'object' ? link.target.id : link.target
-          return (sId === node.id && tId === hoveredNode.id) || (sId === hoveredNode.id && tId === node.id)
+          return (
+            (sId === node.id && tId === hoveredNode.id) ||
+            (sId === hoveredNode.id && tId === node.id)
+          )
         })
       }
     }
@@ -988,7 +991,8 @@ export default function MapComponent() {
           onNodeRightClick={(node) => {
             const category = (node as any).category
             const nodeId = node.id as string
-            const isExpandable = viewMode === 'industry' ? category !== 'executive' : category !== 'person'
+            const isExpandable =
+              viewMode === 'industry' ? category !== 'executive' : category !== 'person'
             if (isExpandable && nodeId) {
               setExpandedIds((prev) => {
                 const next = new Set(prev)
