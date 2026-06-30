@@ -2,29 +2,42 @@
 
 ## Project Structure & Module Organization
 
-- `app/`: Next.js App Router entrypoints (`layout.tsx`, `page.tsx`), route segments, and global styles in `globals.css`.
-- `components/`: reusable UI and feature modules (notably `BudgetExplorer.tsx`, `MapComponent.tsx`, `ExplorerShell.tsx`).
-- `public/`: static assets served at root paths (`/next.svg`, `/vercel.svg`, etc.).
-- Root config: `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, `postcss.config.mjs`.
+- `amplify/`: AWS Amplify Gen 2 backend infrastructure as code, including auth configurations (`auth/resource.ts`) and data schema definitions (`data/resource.ts`).
+- `app/`: Next.js App Router entrypoints (`layout.tsx`, `page.tsx`), global styles in `globals.css`, and functional page segments (e.g. `/admin`, `/login`, `/sign-up`, `/welcome`, `/budget-explorer`).
+- `components/`: Reusable UI and feature modules:
+  - `auth/`: Multi-phase login/signup components and animated backgrounds.
+  - `admin/`: Uploader forms (`BudgetUploader.tsx`, `EmployeeUploader.tsx`).
+  - Root components: `BudgetExplorer.tsx`, `ExplorerShell.tsx`, `MapComponentV2.tsx`, `QueryProvider.tsx`, `AmplifyConfig.tsx`.
+- `public/`: Static assets served at root paths (`/next.svg`, `/vercel.svg`, etc.).
+- Root configs: `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, `postcss.config.mjs`.
 
 ## Build, Test, and Development Commands
 
-- `yarn dev`: starts local dev server at `http://localhost:3000`.
-- `yarn build`: creates production build.
-- `yarn start`: serves production build locally.
-- `yarn lint`: runs ESLint checks.
+- `yarn dev`: Starts local dev server at `http://localhost:3000`.
+- `npx ampx sandbox`: Starts the local development sandbox for AWS Amplify Gen 2 backend resources.
+- `yarn build`: Creates Next.js production build.
+- `yarn start`: Serves production build locally.
+- `yarn lint`: Runs ESLint checks.
+- `yarn format`: Formats source files using Prettier.
 
 ## Coding Style & Naming Conventions
 
-- Language: TypeScript + React function components.
-- Indentation: 2 spaces; keep imports grouped and remove unused symbols.
-- Components: `PascalCase` filenames and exports (example: `MapComponent.tsx`).
-- Route files: Next.js conventions (`page.tsx`, `layout.tsx`).
-- Styling: update `app/globals.css` for shared styles; keep component-local styling close to feature code.
-- Tailwind classnames: write mobile-first utilities and add responsive variants (`sm:`, `md:`, `lg:`) progressively.
-- Tailwind classnames: prefer semantic tokens and scale utilities (`bg-background`, `text-foreground`, spacing/size scale) over raw values.
-- Tailwind classnames: use arbitrary values only when no token or standard utility can express the style.
-- Linting: use `eslint` via `yarn lint`; fix warnings before opening a PR.
+- **Language**: TypeScript + React function components.
+- **Indentation**: 2 spaces; keep imports grouped and remove unused symbols.
+- **Components**: Use `PascalCase` filenames and exports (example: `MapComponentV2.tsx`).
+- **Route files**: Next.js App Router conventions (`page.tsx`, `layout.tsx`).
+
+### Styling & Tailwind CSS v4 Guidelines
+
+- **No `tailwind.config.js`**: Tailwind CSS v4 is configured entirely inside [app/globals.css](file:///Users/annguyen/Documents/tribal/repo/omnicom-network/app/globals.css) via `@import 'tailwindcss'` and `@theme inline`. Do not look for or create a Tailwind config file.
+- **Design Tokens**: Standard design tokens (e.g., `bg-background`, `text-foreground`, `bg-card`, `--profit`, `--loss`, `--center-node`) are mapped to CSS variables in `app/globals.css`. Prefer semantic token classes over raw color values.
+- **Tailwind classnames**: Write mobile-first utilities and add responsive variants (`sm:`, `md:`, `lg:`) progressively. Use arbitrary values only when no token or standard utility can express the style.
+- **Component-local styles**: Keep component styling close to feature code, updating `app/globals.css` only for shared, global rules or core theme definitions.
+
+### AWS Amplify Gen 2 Guidelines
+
+- **Schema Updates**: Modify Data models in `amplify/data/resource.ts` and Auth definitions in `amplify/auth/resource.ts`. Ensure schema typescript types are exported via `Schema`.
+- **Validation**: Proactively verify schema changes compile successfully by ensuring `npx ampx sandbox` validation runs without error.
 
 ## Testing Guidelines
 
