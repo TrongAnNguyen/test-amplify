@@ -6,7 +6,7 @@ export async function fetchAllPages<T>(
     data: T[]
     nextToken?: string | null
     errors?: any[]
-  }>
+  }>,
 ): Promise<T[]> {
   let nextToken: string | null = null
   const allData: T[] = []

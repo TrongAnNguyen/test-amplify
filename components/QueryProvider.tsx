@@ -13,7 +13,7 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
             refetchOnWindowFocus: false, // Avoid excessive refetching on page focus
           },
         },
-      })
+      }),
   )
 
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

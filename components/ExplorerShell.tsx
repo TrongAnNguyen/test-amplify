@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Moon, Sun, LogOut, Loader2 } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, useCallback, type ReactNode } from 'react'
 import { fetchAuthSession, signOut } from 'aws-amplify/auth'
 import { getUserGroups } from '@/utils/roles'
 
@@ -38,19 +38,53 @@ export default function ExplorerShell({
   const [groups, setGroups] = useState<string[]>([])
   const [isSigningOut, setIsSigningOut] = useState(false)
 
+  const checkSession = useCallback(async () => {
+    try {
+      const session = await fetchAuthSession({ forceRefresh: true })
+      if (!session.tokens) {
+        router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
+        return false
+      }
+      setGroups(getUserGroups(session))
+      return true
+    } catch (error) {
+      console.error('Session validation failed, redirecting to login:', error)
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
+      return false
+    }
+  }, [pathname, router])
+
   useEffect(() => {
     setMounted(true)
     const savedTheme = window.localStorage.getItem('theme') as ThemeMode | null
     const initialTheme = savedTheme ?? getSystemTheme()
     setTheme(initialTheme)
-
-    // Fetch user groups for RBAC
-    fetchAuthSession()
-      .then((session) => {
-        setGroups(getUserGroups(session))
-      })
-      .catch(() => setGroups([]))
   }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
+    // Run check on mount
+    checkSession()
+
+    // Run check when window/tab is focused or becomes visible again
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkSession()
+      }
+    }
+    const handleFocus = () => {
+      checkSession()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [mounted, checkSession])
 
   useEffect(() => {
     if (mounted) {
